@@ -5,3 +5,4 @@ venv/
 .vscode/ 
 ai_lms.db 
 *.log 
+.DS_Store 
