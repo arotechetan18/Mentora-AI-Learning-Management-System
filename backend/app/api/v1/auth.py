@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from ...core.database import get_db
 from ...core.security import get_password_hash, verify_password, create_access_token
@@ -7,10 +8,10 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional
 
 # ✅ Router instance
-router = APIRouter(tags=["Authentication"])  # ✅ हे Add करा
+router = APIRouter()
 
 # ==================== TEST ROUTE ====================
-@router.get("/test", tags=["Authentication"])  # ✅ हे Add करा
+@router.get("/test")
 def test():
     return {"message": "Auth Working"}
 
@@ -29,7 +30,7 @@ class UserResponse(BaseModel):
     id: int
     email: str
     full_name: str
-    role: str
+    role: UserRole
     is_active: bool
     
     class Config:
@@ -41,11 +42,14 @@ class TokenResponse(BaseModel):
     user: UserResponse
 
 # ==================== REGISTER API ====================
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED, tags=["Authentication"])  # ✅ हे Add करा
+
+print("REGISTER API LOADED")
+@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register(user_data: UserCreate, db: Session = Depends(get_db)):
     """
     Register a new user
     """
+    # Check if user exists
     existing = db.query(User).filter(User.email == user_data.email).first()
     if existing:
         raise HTTPException(
@@ -53,6 +57,7 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
             detail="Email already registered"
         )
     
+    # Create new user
     hashed_password = get_password_hash(user_data.password)
     new_user = User(
         email=user_data.email,
@@ -66,25 +71,23 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 # ==================== LOGIN API ====================
-@router.post("/login", response_model=TokenResponse, tags=["Authentication"])  # ✅ हे Add करा
-def login(user_data: UserLogin, db: Session = Depends(get_db)):
-    """
-    Login user and get JWT token
-    """
-    user = db.query(User).filter(User.email == user_data.email).first()
+@router.post("/login", response_model=TokenResponse)
+def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(
+        User.email == form_data.username
+    ).first()
+
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials"
-        )
-    
-    if not verify_password(user_data.password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials"
-        )
-    
-    access_token = create_access_token({"sub": user.id})
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    if not verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    access_token = create_access_token({"sub": str(user.id)})
+
     return {
         "access_token": access_token,
         "token_type": "bearer",

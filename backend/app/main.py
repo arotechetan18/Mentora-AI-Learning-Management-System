@@ -1,11 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 from app.core.config import settings
 from app.core.database import Base, engine
 from app.api.v1.auth import router as auth_router
+from app.api.v1.courses import router as courses_router
 
-# Create database tables
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
@@ -15,7 +14,6 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,21 +22,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# API Routes
-app.include_router(
-    auth_router,
-    prefix=settings.API_V1_STR,
-    tags=["Authentication"]
-)
+app.include_router(auth_router, prefix=settings.API_V1_STR)
+app.include_router(courses_router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 def root():
-    return {
-        "message": "AI LMS Backend Running Successfully"
-    }
+    return {"message": "AI LMS Backend Running Successfully"}
 
 @app.get("/health")
 def health():
-    return {
-        "status": "healthy"
-    }
+    return {"status": "healthy"}
