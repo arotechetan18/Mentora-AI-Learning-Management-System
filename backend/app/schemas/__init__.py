@@ -1,7 +1,7 @@
-from .user import UserCreate, UserLogin, UserResponse, TokenResponse
 from .course import CourseCreate, CourseUpdate, CourseResponse, DifficultyLevel
+from .enrollment import EnrollmentCreate, EnrollmentResponse
 
 __all__ = [
-    "UserCreate", "UserLogin", "UserResponse", "TokenResponse",
-    "CourseCreate", "CourseUpdate", "CourseResponse", "DifficultyLevel"
+    "CourseCreate", "CourseUpdate", "CourseResponse", "DifficultyLevel",
+    "EnrollmentCreate", "EnrollmentResponse"
 ]

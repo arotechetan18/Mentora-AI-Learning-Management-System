@@ -1,19 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from ...core.database import get_db
 from ...core.security import get_password_hash, verify_password, create_access_token
 from ...models.user import User, UserRole
 from pydantic import BaseModel, EmailStr
 from typing import Optional
+from fastapi.security import OAuth2PasswordRequestForm
 
-# ✅ Router instance
-router = APIRouter()
-
-# ==================== TEST ROUTE ====================
-@router.get("/test")
-def test():
-    return {"message": "Auth Working"}
+# Router with tags
+router = APIRouter(tags=["Authentication"])
 
 # ==================== SCHEMAS ====================
 class UserCreate(BaseModel):
@@ -41,23 +36,18 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
     user: UserResponse
 
-# ==================== REGISTER API ====================
+# ==================== TEST ROUTE ====================
+@router.get("/test")
+def test():
+    return {"message": "Auth Working"}
 
-print("REGISTER API LOADED")
+# ==================== REGISTER API ====================
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register(user_data: UserCreate, db: Session = Depends(get_db)):
-    """
-    Register a new user
-    """
-    # Check if user exists
     existing = db.query(User).filter(User.email == user_data.email).first()
     if existing:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
-        )
+        raise HTTPException(status_code=400, detail="Email already registered")
     
-    # Create new user
     hashed_password = get_password_hash(user_data.password)
     new_user = User(
         email=user_data.email,
@@ -70,24 +60,20 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user)
     return new_user
 
-# ==================== LOGIN API ====================
+# ==================== LOGIN API (JSON Body) ====================
 @router.post("/login", response_model=TokenResponse)
 def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
+    user_data: UserLogin,
     db: Session = Depends(get_db)
 ):
-    user = db.query(User).filter(
-        User.email == form_data.username
-    ).first()
-
+    user = db.query(User).filter(User.email == user_data.email).first()
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-
-    if not verify_password(form_data.password, user.hashed_password):
+    
+    if not verify_password(user_data.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-
+    
     access_token = create_access_token({"sub": str(user.id)})
-
     return {
         "access_token": access_token,
         "token_type": "bearer",
