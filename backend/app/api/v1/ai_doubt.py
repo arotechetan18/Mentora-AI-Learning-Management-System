@@ -12,10 +12,12 @@ from datetime import datetime
 
 router = APIRouter(tags=["AI Doubt"])
 
+# ✅ Request Schema
 class DoubtQuestion(BaseModel):
     question: str
     course_id: Optional[int] = None
 
+# ✅ Response Schema
 class DoubtResponse(BaseModel):
     question: str
     answer: str

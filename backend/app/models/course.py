@@ -17,7 +17,7 @@ class Course(Base):
     description = Column(Text, nullable=False)
     category = Column(String, nullable=False)
     difficulty = Column(Enum(DifficultyLevel), default=DifficultyLevel.BEGINNER)
-    duration = Column(Integer, nullable=False)  # hours
+    duration = Column(Integer, nullable=False)
     instructor_id = Column(Integer, ForeignKey("users.id"))
     price = Column(Float, default=0.0)
     is_published = Column(Boolean, default=False)
@@ -26,3 +26,5 @@ class Course(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     instructor = relationship("User", backref="courses_created")
+    enrollments = relationship("Enrollment", back_populates="course")
+    modules = relationship("Module", back_populates="course", cascade="all, delete-orphan")
