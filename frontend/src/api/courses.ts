@@ -1,66 +1,89 @@
-import axios from 'axios';
+import api from './index';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 export interface Course {
   id: number;
   title: string;
   description: string;
-  instructor: string;
-  duration: string;
-  level: 'Beginner' | 'Intermediate' | 'Advanced';
-  enrolled_count: number;
-  thumbnail?: string;
+  category: string;
+  difficulty: string;
+  duration: number;
+  price: number;
+  instructor_id: number;
+  is_published: boolean;
+  cover_image?: string;
+  created_at: string;
+  updated_at?: string;
 }
 
+// Module Interface
 export interface Module {
   id: number;
   course_id: number;
   title: string;
   description: string;
   order: number;
+  lessons?: Lesson[];
+  created_at: string;
+  updated_at: string;
 }
 
+// Lesson Interface
 export interface Lesson {
   id: number;
   module_id: number;
   title: string;
   description: string;
-  content: string;
-  video_url?: string;
-  duration: string;
+  concept: string;
+  example: string;
+  interview_questions: string;
+  duration: number;
   order: number;
-  is_completed: boolean;
+  is_completed?: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
-// Get all courses
-export const getCourses = async (): Promise<Course[]> => {
-  try {
-    const response = await axios.get(`${API_URL}/courses`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching courses:', error);
-    throw error;
-  }
+export interface CourseCreate {
+  title: string;
+  description: string;
+  category: string;
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  duration: number;
+  price: number;
+}
+
+export const getCourses = async (params?: {
+  skip?: number;
+  limit?: number;
+  category?: string;
+  difficulty?: string;
+  search?: string;
+}): Promise<Course[]> => {
+  const response = await api.get<Course[]>('/courses', { params });
+  return response.data;
 };
 
-// Get single course with modules
-export const getCourse = async (id: string): Promise<Course & { modules: Module[] }> => {
-  try {
-    const response = await axios.get(`${API_URL}/courses/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching course:', error);
-    throw error;
-  }
+export const getCourse = async (id: number): Promise<Course> => {
+  const response = await api.get<Course>(`/courses/${id}`);
+  return response.data;
 };
 
-// Enroll in a course
-export const enrollCourse = async (courseId: number): Promise<void> => {
-  try {
-    await axios.post(`${API_URL}/courses/${courseId}/enroll`);
-  } catch (error) {
-    console.error('Error enrolling in course:', error);
-    throw error;
-  }
+export const getCourseModules = async (courseId: number): Promise<Module[]> => {
+  const response = await api.get<Module[]>(`/courses/${courseId}/modules`);
+  return response.data;
+};
+
+export const createCourse = async (data: CourseCreate): Promise<Course> => {
+  const response = await api.post<Course>('/courses', data);
+  return response.data;
+};
+
+export const updateCourse = async (id: number, data: Partial<CourseCreate>): Promise<Course> => {
+  const response = await api.put<Course>(`/courses/${id}`, data);
+  return response.data;
+};
+
+export const deleteCourse = async (id: number): Promise<void> => {
+  await api.delete(`/courses/${id}`);
 };

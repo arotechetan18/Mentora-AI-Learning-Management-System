@@ -25,6 +25,7 @@ class Course(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    instructor = relationship("User", backref="courses_created")
-    enrollments = relationship("Enrollment", back_populates="course")
+    # Relationships - back_populates 
+    instructor = relationship("User", back_populates="courses_created")
+    enrollments = relationship("Enrollment", back_populates="course", cascade="all, delete-orphan")
     modules = relationship("Module", back_populates="course", cascade="all, delete-orphan")

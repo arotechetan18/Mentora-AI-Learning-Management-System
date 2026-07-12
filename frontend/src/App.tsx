@@ -3,28 +3,31 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import LessonPage from './pages/Lesson';
+
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
-import Home from './pages/Home';import Dashboard from './pages/Dashboard';
-import Courses from './pages/Courses';
+import Dashboard from './pages/Dashboard';
 import CourseDetails from './pages/CourseDetails';
-import Lesson from './pages/Lesson';
+import LessonPage from './pages/Lesson';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
 const AppRoutes = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <>
       <Routes>
-        <Route path="/" element={<Home />} />
+        {/* ✅ Dashboard is default page */}
+        <Route path="/" element={<Navigate to="/dashboard" />} />
         <Route path="/login" element={!user ? <Login /> : <Navigate to="/dashboard" />} />
         <Route path="/register" element={!user ? <Register /> : <Navigate to="/dashboard" />} />
-        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/courses" element={<Courses />} />
-        <Route path="/course/:id" element={<ProtectedRoute><CourseDetails /></ProtectedRoute>} />
-       <Route path="/lesson/:id" element={<ProtectedRoute><LessonPage /></ProtectedRoute>} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/course/:id" element={<CourseDetails />} />
+        <Route path="/lesson/:id" element={<ProtectedRoute><LessonPage /></ProtectedRoute>} />
       </Routes>
       <ToastContainer position="top-right" autoClose={3000} />
     </>

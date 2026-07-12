@@ -2,16 +2,17 @@ import api from './index';
 
 export interface Module {
   id: number;
+  course_id: number;
   title: string;
   description: string;
   order: number;
-  course_id: number;
   created_at: string;
   updated_at: string;
 }
 
 export interface Lesson {
   id: number;
+  module_id: number;
   title: string;
   description: string;
   concept: string;
@@ -20,10 +21,8 @@ export interface Lesson {
   duration: number;
   order: number;
   is_completed?: boolean;
-}
-
-export interface ModuleWithLessons extends Module {
-  lessons: Lesson[];
+  created_at: string;
+  updated_at: string;
 }
 
 export const getModules = async (courseId: number): Promise<Module[]> => {

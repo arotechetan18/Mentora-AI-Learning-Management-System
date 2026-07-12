@@ -7,8 +7,9 @@ import {
   Box,
   Chip,
   LinearProgress,
+  Avatar,
 } from '@mui/material';
-import { School, Timer } from '@mui/icons-material';
+import { School, Timer, TrendingUp } from '@mui/icons-material';
 
 interface Course {
   id: number;
@@ -142,14 +143,15 @@ const CourseCard: React.FC<CourseCardProps> = ({
 
         {isEnrolled ? (
           <Box sx={{ mt: 'auto' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-              <Typography variant="caption" sx={{ fontWeight: 600, color: '#6C63FF' }}>
-                Progress
-              </Typography>
-              <Typography variant="caption" sx={{ fontWeight: 600, color: '#1A1A2E' }}>
-                {progress}%
-              </Typography>
-            </Box>
+            // Progress section मध्ये
+<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+  <Typography variant="caption" sx={{ fontWeight: 600, color: '#6C63FF' }}>
+    Progress
+  </Typography>
+  <Typography variant="caption" sx={{ fontWeight: 600, color: '#1A1A2E' }}>
+    {progress}%
+  </Typography>
+</Box>
             <LinearProgress
               variant="determinate"
               value={progress}

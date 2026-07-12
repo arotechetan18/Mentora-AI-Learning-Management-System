@@ -14,6 +14,5 @@ class Enrollment(Base):
     completed = Column(Boolean, default=False)
     completed_at = Column(DateTime(timezone=True), nullable=True)
     
-    # Relationships
-    user = relationship("User", backref="enrollments")
-    course = relationship("Course", backref="enrollments")
+    user = relationship("User", back_populates="enrollments")
+    course = relationship("Course", back_populates="enrollments")

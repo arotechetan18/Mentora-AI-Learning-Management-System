@@ -3,7 +3,10 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.core.database import SessionLocal
-from app.models.course import Course, Module, Lesson, QuizQuestion
+from app.models.course import Course
+from app.models.module import Module
+from app.models.lesson import Lesson
+from app.models.quiz_question import QuizQuestion
 from app.models.user import User
 
 def seed_courses():
