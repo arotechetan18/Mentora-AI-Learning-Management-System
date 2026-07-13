@@ -1,6 +1,6 @@
 import api from './index';
 
-
+// ✅ Complete Course interface with progress
 export interface Course {
   id: number;
   title: string;
@@ -14,9 +14,10 @@ export interface Course {
   cover_image?: string;
   created_at: string;
   updated_at?: string;
+  progress?: number;  // ✅ Optional progress property
 }
 
-// Module Interface
+// ✅ Module Interface
 export interface Module {
   id: number;
   course_id: number;
@@ -28,7 +29,7 @@ export interface Module {
   updated_at: string;
 }
 
-// Lesson Interface
+// ✅ Lesson Interface
 export interface Lesson {
   id: number;
   module_id: number;

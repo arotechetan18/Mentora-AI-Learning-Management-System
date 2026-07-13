@@ -23,7 +23,7 @@ interface Course {
 interface CourseCardProps {
   course: Course;
   isEnrolled: boolean;
-  progress?: number;
+  progress?: number;  
   onEnroll: () => void;
   onClick?: () => void;
 }
@@ -140,6 +140,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
           </Box>
         </Box>
 
+        {/* Progress Section - Fixed */}
         {isEnrolled ? (
           <Box sx={{ mt: 'auto' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>

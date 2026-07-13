@@ -20,6 +20,7 @@ export interface LessonContent {
   quiz: QuizQuestion[];
   next_lesson_id: number | null;
   prev_lesson_id: number | null;
+    course_id: number;
 }
 
 export interface QuizResult {

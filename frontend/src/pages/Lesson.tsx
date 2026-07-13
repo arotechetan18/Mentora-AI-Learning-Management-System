@@ -12,22 +12,42 @@ import {
   RadioGroup,
   FormControlLabel,
   FormControl,
+  CircularProgress,
+  Alert,
+  Stepper,
+  Step,
+  StepLabel,
+  IconButton,  // ✅ IconButton Add
 } from '@mui/material';
-import { CheckCircle, ArrowBack, ArrowForward } from '@mui/icons-material';
-import { getLesson, submitQuiz, markLessonComplete, LessonContent, QuizResult } from '../api/lessons';
+import {
+  CheckCircle,
+  ArrowBack,    // ✅ Back Icon
+  ArrowForward,
+  Refresh,
+} from '@mui/icons-material';
+import { getLesson, submitQuiz, markLessonComplete, LessonContent } from '../api/lessons';
+import { toast } from 'react-toastify';
+
+interface QuizQuestion {
+  id: number;
+  question: string;
+  options: string[];
+  explanation: string;
+}
 
 const LessonPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [lesson, setLesson] = useState<LessonContent | null>(null);
-  const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
-  const [quizSubmitted, setQuizSubmitted] = useState(false);
-  const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeStep, setActiveStep] = useState(0);
+  const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
+  const [showResults, setShowResults] = useState(false);
+  const [quizResult, setQuizResult] = useState<any>(null);
 
   useEffect(() => {
     fetchLesson();
-  }, [id]);
+    }, [id]);
 
   const fetchLesson = async () => {
     try {
@@ -36,6 +56,7 @@ const LessonPage: React.FC = () => {
       setSelectedAnswers(new Array(data.quiz.length).fill(-1));
     } catch (error) {
       console.error('Error fetching lesson:', error);
+      toast.error('Failed to load lesson');
     } finally {
       setLoading(false);
     }
@@ -48,25 +69,43 @@ const LessonPage: React.FC = () => {
   };
 
   const handleSubmitQuiz = async () => {
+    if (selectedAnswers.includes(-1)) {
+      toast.warning('Please answer all questions before submitting');
+      return;
+    }
+
     try {
       const result = await submitQuiz(Number(id), selectedAnswers);
       setQuizResult(result);
-      setQuizSubmitted(true);
+      setShowResults(true);
+
       if (result.passed) {
         await markLessonComplete(Number(id));
+        toast.success('🎉 Quiz passed! Lesson completed!');
         await fetchLesson();
+      } else {
+        toast.error('❌ Need 60% to pass. Please review and try again.');
       }
     } catch (error) {
       console.error('Error submitting quiz:', error);
+      toast.error('Failed to submit quiz');
     }
+  };
+
+  const handleTryAgain = () => {
+    setShowResults(false);
+    setSelectedAnswers(new Array(lesson?.quiz?.length || 0).fill(-1));
+    toast.info('🔄 Quiz reset. Try again!');
   };
 
   const handleMarkComplete = async () => {
     try {
       await markLessonComplete(Number(id));
+      toast.success('✅ Lesson marked as complete!');
       await fetchLesson();
     } catch (error) {
       console.error('Error marking complete:', error);
+      toast.error('Failed to mark complete');
     }
   };
 
@@ -82,16 +121,43 @@ const LessonPage: React.FC = () => {
     }
   };
 
-  if (loading) return <Box sx={{ p: 4 }}><Typography>Loading lesson...</Typography></Box>;
-  if (!lesson) return <Box sx={{ p: 4 }}><Typography>Lesson not found</Typography></Box>;
+  const steps = ['📖 Concept', '💡 Example', '📝 Quiz'];
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!lesson) {
+    return (
+      <Container>
+        <Alert severity="error" sx={{ mt: 4 }}>Lesson not found</Alert>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="lg">
       <Box sx={{ mt: 4, mb: 4 }}>
         <Paper elevation={3} sx={{ p: 4 }}>
-          {/* Header */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h4">{lesson.title}</Typography>
+          {/*  Header with Back Button */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+          
+            <IconButton 
+              onClick={() => navigate(`/course/${lesson.course_id || 1}`)}
+              sx={{ 
+                bgcolor: '#f0f0f0', 
+                '&:hover': { bgcolor: '#e0e0e0' } 
+              }}
+            >
+              <ArrowBack />
+            </IconButton>
+            <Typography variant="h4" sx={{ fontWeight: 700, flex: 1 }}>
+              {lesson.title}
+            </Typography>
             <Chip
               label={lesson.is_completed ? '✅ Completed' : 'In Progress'}
               color={lesson.is_completed ? 'success' : 'warning'}
@@ -102,89 +168,183 @@ const LessonPage: React.FC = () => {
             {lesson.description}
           </Typography>
 
-          <Divider sx={{ my: 3 }} />
+          <Divider sx={{ mb: 3 }} />
 
-          {/* 📖 Concept */}
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            📖 Concept
-          </Typography>
-          <Box sx={{ p: 3, bgcolor: '#f8f9fa', borderRadius: 2, mb: 3, whiteSpace: 'pre-wrap' }}>
-            <Typography variant="body1">{lesson.concept}</Typography>
-          </Box>
+          {/* Stepper */}
+          <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
+            {steps.map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
 
-          {/* 💡 Example */}
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            💡 Example
-          </Typography>
-          <Box sx={{ p: 3, bgcolor: '#e3f2fd', borderRadius: 2, mb: 3, whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
-            <Typography variant="body1">{lesson.example}</Typography>
-          </Box>
-
-          {/* 🎯 Interview Questions */}
-          {lesson.interview_questions && (
-            <>
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                🎯 Interview Questions
-              </Typography>
-              <Box sx={{ p: 3, bgcolor: '#fce4ec', borderRadius: 2, mb: 3, whiteSpace: 'pre-wrap' }}>
-                <Typography variant="body1">{lesson.interview_questions}</Typography>
-              </Box>
-            </>
-          )}
-
-          <Divider sx={{ my: 3 }} />
-
-          {/* 📝 Quiz */}
-          {lesson.quiz.length > 0 && !quizSubmitted && (
+          {/* Content */}
+          {activeStep === 0 && (
             <Box>
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                📝 Quiz ({lesson.quiz.length} Questions)
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                📖 Concept
               </Typography>
-              {lesson.quiz.map((q: any, qIndex: number) => (
-                <Box key={q.id} sx={{ mb: 3, p: 2, bgcolor: '#f5f5f5', borderRadius: 2 }}>
-                  <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                    {qIndex + 1}. {q.question}
-                  </Typography>
-                  <FormControl component="fieldset">
-                    <RadioGroup
-                      value={selectedAnswers[qIndex]}
-                      onChange={(e) => handleAnswerSelect(qIndex, Number(e.target.value))}
-                    >
-                      {q.options.map((opt: string, oIndex: number) => (
-                        <FormControlLabel
-                          key={oIndex}
-                          value={oIndex}
-                          control={<Radio />}
-                          label={opt}
-                        />
-                      ))}
-                    </RadioGroup>
-                  </FormControl>
-                </Box>
-              ))}
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleSubmitQuiz}
-                disabled={selectedAnswers.includes(-1)}
-              >
-                Submit Quiz
-              </Button>
+              <Box sx={{ p: 3, bgcolor: '#f8f9fa', borderRadius: 2 }}>
+                <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+                  {lesson.concept}
+                </Typography>
+              </Box>
+              <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+                <Button
+                  variant="contained"
+                  onClick={() => setActiveStep(1)}
+                  endIcon={<ArrowForward />}
+                >
+                  Next: Example
+                </Button>
+              </Box>
             </Box>
           )}
 
-          {/* Quiz Results */}
-          {quizSubmitted && quizResult && (
-            <Box sx={{ mt: 3, p: 3, bgcolor: quizResult.passed ? '#e8f5e9' : '#ffebee', borderRadius: 2 }}>
-              <Typography variant="h6">
-                {quizResult.passed ? '✅ Passed!' : '❌ Need to Review'}
+          {activeStep === 1 && (
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                💡 Example
               </Typography>
-              <Typography>
-                Score: {quizResult.score}/{quizResult.total} ({quizResult.percentage}%)
+              <Box sx={{ p: 3, bgcolor: '#e3f2fd', borderRadius: 2 }}>
+                <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+                  {lesson.example}
+                </Typography>
+              </Box>
+              <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
+                <Button
+                  variant="outlined"
+                  onClick={() => setActiveStep(0)}
+                  startIcon={<ArrowBack />}
+                >
+                  Back
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={() => setActiveStep(2)}
+                  endIcon={<ArrowForward />}
+                >
+                  Next: Quiz
+                </Button>
+              </Box>
+            </Box>
+          )}
+
+          {activeStep === 2 && (
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                📝 Quiz
               </Typography>
-              <Typography>
-                {quizResult.percentage >= 60 ? 'You can proceed to next lesson.' : 'Please review the content and try again.'}
-              </Typography>
+
+              {lesson.quiz.length > 0 && !showResults && (
+                <Box>
+                  {lesson.quiz.map((q: QuizQuestion, qIndex: number) => (
+                    <Box key={q.id} sx={{ mb: 3, p: 2, bgcolor: '#f5f5f5', borderRadius: 2 }}>
+                      <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                        {qIndex + 1}. {q.question}
+                      </Typography>
+                      <FormControl component="fieldset" fullWidth>
+                        <RadioGroup
+                          value={selectedAnswers[qIndex]}
+                          onChange={(e) => handleAnswerSelect(qIndex, Number(e.target.value))}
+                        >
+                          {q.options.map((opt: string, oIndex: number) => (
+                            <FormControlLabel
+                              key={oIndex}
+                              value={oIndex}
+                              control={<Radio />}
+                              label={opt}
+                            />
+                          ))}
+                        </RadioGroup>
+                      </FormControl>
+                    </Box>
+                  ))}
+
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+                    <Button
+                      variant="outlined"
+                      onClick={() => setActiveStep(1)}
+                      startIcon={<ArrowBack />}
+                    >
+                      Back
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={handleSubmitQuiz}
+                      disabled={selectedAnswers.includes(-1)}
+                    >
+                      Submit Quiz
+                    </Button>
+                  </Box>
+                </Box>
+              )}
+
+              {showResults && quizResult && (
+                <Box>
+                  <Alert
+                    severity={quizResult.passed ? 'success' : 'error'}
+                    sx={{ mb: 3 }}
+                  >
+                    <Typography variant="h6">
+                      {quizResult.passed ? '✅ Passed!' : '❌ Need to Review'}
+                    </Typography>
+                    <Typography>
+                      Score: {quizResult.score}/{quizResult.total} ({quizResult.percentage}%)
+                    </Typography>
+                    {!quizResult.passed && (
+                      <Typography variant="body2" sx={{ mt: 1 }}>
+                        Minimum passing score is 60%. Please review and try again.
+                      </Typography>
+                    )}
+                  </Alert>
+
+                  {quizResult.results.map((result: any, index: number) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        p: 2,
+                        mb: 2,
+                        bgcolor: result.is_correct ? '#e8f5e9' : '#ffebee',
+                        borderRadius: 2,
+                      }}
+                    >
+                      <Typography variant="subtitle2">
+                        Q{index + 1}: {result.is_correct ? '✅' : '❌'}
+                      </Typography>
+                      <Typography variant="body2">
+                        {result.explanation || 'No explanation available'}
+                      </Typography>
+                    </Box>
+                  ))}
+
+                  {!quizResult.passed && (
+                    <Button
+                      variant="contained"
+                      color="warning"
+                      startIcon={<Refresh />}
+                      onClick={handleTryAgain}
+                      sx={{ mt: 2 }}
+                    >
+                      Try Again
+                    </Button>
+                  )}
+
+                  {quizResult.passed && !lesson.is_completed && (
+                    <Button
+                      variant="contained"
+                      color="success"
+                      onClick={handleMarkComplete}
+                      startIcon={<CheckCircle />}
+                      sx={{ mt: 2 }}
+                    >
+                      Mark Complete
+                    </Button>
+                  )}
+                </Box>
+              )}
             </Box>
           )}
 
@@ -198,23 +358,6 @@ const LessonPage: React.FC = () => {
             >
               Previous
             </Button>
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              {!lesson.is_completed && quizSubmitted && quizResult?.passed && (
-                <Button
-                  variant="contained"
-                  color="success"
-                  onClick={handleMarkComplete}
-                  startIcon={<CheckCircle />}
-                >
-                  Mark Complete
-                </Button>
-              )}
-              {lesson.is_completed && (
-                <Button variant="contained" color="warning" disabled>
-                  ✅ Completed
-                </Button>
-              )}
-            </Box>
             <Button
               variant="outlined"
               endIcon={<ArrowForward />}
@@ -225,7 +368,7 @@ const LessonPage: React.FC = () => {
             </Button>
           </Box>
         </Paper>
-      </Box>
+      </Box>  
     </Container>
   );
 };

@@ -143,7 +143,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
 
         {isEnrolled ? (
           <Box sx={{ mt: 'auto' }}>
-            // Progress section मध्ये
+            
 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
   <Typography variant="caption" sx={{ fontWeight: 600, color: '#6C63FF' }}>
     Progress

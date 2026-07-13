@@ -5,6 +5,7 @@ from ...core.database import get_db
 from ...core.security import get_current_user
 from ...models.user import User
 from ...models.lesson import Lesson
+from ...models.module import Module  # ✅ Module import
 from ...models.quiz_question import QuizQuestion
 from ...models.lesson_progress import LessonProgress
 from pydantic import BaseModel
@@ -54,20 +55,48 @@ def get_lesson(
     if not lesson:
         raise HTTPException(status_code=404, detail="Lesson not found")
     
-    progress = db.query(LessonProgress).filter(
-        LessonProgress.user_id == current_user.id,
-        LessonProgress.lesson_id == lesson_id
-    ).first()
+    # Get current module
+    current_module = db.query(Module).filter(Module.id == lesson.module_id).first()
     
-    prev = db.query(Lesson).filter(
+    # ✅ Get Previous Lesson (Same Module or Previous Module's Last Lesson)
+    prev_lesson = db.query(Lesson).filter(
         Lesson.module_id == lesson.module_id,
         Lesson.order < lesson.order
     ).order_by(Lesson.order.desc()).first()
     
-    next = db.query(Lesson).filter(
+    if not prev_lesson:
+        # Get previous module's last lesson
+        prev_module = db.query(Module).filter(
+            Module.course_id == current_module.course_id,
+            Module.order < current_module.order
+        ).order_by(Module.order.desc()).first()
+        if prev_module:
+            prev_lesson = db.query(Lesson).filter(
+                Lesson.module_id == prev_module.id
+            ).order_by(Lesson.order.desc()).first()
+    
+    # ✅ Get Next Lesson (Same Module or Next Module's First Lesson)
+    next_lesson = db.query(Lesson).filter(
         Lesson.module_id == lesson.module_id,
         Lesson.order > lesson.order
     ).order_by(Lesson.order.asc()).first()
+    
+    if not next_lesson:
+        # Get next module's first lesson
+        next_module = db.query(Module).filter(
+            Module.course_id == current_module.course_id,
+            Module.order > current_module.order
+        ).order_by(Module.order.asc()).first()
+        if next_module:
+            next_lesson = db.query(Lesson).filter(
+                Lesson.module_id == next_module.id
+            ).order_by(Lesson.order.asc()).first()
+    
+    # Get progress and quiz
+    progress = db.query(LessonProgress).filter(
+        LessonProgress.user_id == current_user.id,
+        LessonProgress.lesson_id == lesson_id
+    ).first()
     
     quiz = db.query(QuizQuestion).filter(QuizQuestion.lesson_id == lesson_id).all()
     
@@ -82,8 +111,9 @@ def get_lesson(
         "order": lesson.order,
         "is_completed": progress.is_completed if progress else False,
         "quiz": quiz,
-        "next_lesson_id": next.id if next else None,
-        "prev_lesson_id": prev.id if prev else None
+        "next_lesson_id": next_lesson.id if next_lesson else None,
+        "prev_lesson_id": prev_lesson.id if prev_lesson else None,
+         "course_id": current_module.course_id
     }
 
 # ==================== SUBMIT QUIZ ====================

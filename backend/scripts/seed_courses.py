@@ -21,6 +21,8 @@ def seed_courses():
         # ============================================
         # COURSE 1: BASIC PYTHON
         # ============================================
+        print("\n📚 Creating Basic Python Course...")
+        
         python_course = Course(
             title="Basic Python Programming",
             description="Learn Python from scratch with real-world examples",
@@ -33,6 +35,8 @@ def seed_courses():
         )
         db.add(python_course)
         db.commit()
+        db.refresh(python_course)
+        print(f"✅ Python Course created (ID: {python_course.id})")
         
         python_modules = [
             {
@@ -77,7 +81,7 @@ print(f"Name: {name}, Age: {age}")""",
                                 "explanation": "Python was created by Guido van Rossum in 1991."
                             },
                             {
-                                "question": "Which of the following is a valid Python variable name?",
+                                "question": "Which is a valid Python variable name?",
                                 "options": ["1name", "name-1", "_name", "def"],
                                 "correct_answer": 2,
                                 "explanation": "_name is valid. Variables can't start with number or contain -."
@@ -237,6 +241,7 @@ print(divide(10, 0))   # Cannot divide by zero""",
             )
             db.add(module)
             db.commit()
+            db.refresh(module)
             
             for lesson_data in mod_data["lessons"]:
                 lesson = Lesson(
@@ -251,6 +256,7 @@ print(divide(10, 0))   # Cannot divide by zero""",
                 )
                 db.add(lesson)
                 db.commit()
+                db.refresh(lesson)
                 
                 for quiz_data in lesson_data.get("quiz", []):
                     quiz = QuizQuestion(
@@ -268,18 +274,22 @@ print(divide(10, 0))   # Cannot divide by zero""",
         # ============================================
         # COURSE 2: CORE JAVA
         # ============================================
+        print("\n📚 Creating Core Java Course...")
+        
         java_course = Course(
             title="Core Java Programming",
-            description="Master Java fundamentals with real-world examples",
+            description="Master Java from basics to advanced with real-world examples",
             category="Programming",
             difficulty="beginner",
-            duration=35,
+            duration=60,  # ✅ Full Course
             instructor_id=instructor.id,
-            price=2499,
+            price=4999,
             is_published=True
         )
         db.add(java_course)
         db.commit()
+        db.refresh(java_course)
+        print(f"✅ Java Course created (ID: {java_course.id})")
         
         java_modules = [
             {
@@ -483,7 +493,7 @@ public class BankAccount {
                 ]
             },
             {
-                "title": "Object-Oriented Programming",
+                "title": "OOP Concepts",
                 "description": "OOP concepts in Java",
                 "order": 2,
                 "lessons": [
@@ -509,7 +519,7 @@ public class Car {
     void stop() {
         System.out.println("Car stopped");
     }
-} Car myCar = new Car();
+}Car myCar = new Car();
 myCar.brand = "Toyota";
 myCar.model = "Camry";
 myCar.year = 2024;
@@ -650,6 +660,7 @@ public class BankAccount {
             )
             db.add(module)
             db.commit()
+            db.refresh(module)
             
             for lesson_data in mod_data["lessons"]:
                 lesson = Lesson(
@@ -664,6 +675,7 @@ public class BankAccount {
                 )
                 db.add(lesson)
                 db.commit()
+                db.refresh(lesson)
                 
                 for quiz_data in lesson_data.get("quiz", []):
                     quiz = QuizQuestion(
@@ -677,11 +689,12 @@ public class BankAccount {
                 db.commit()
         
         print("✅ Java Course seeded successfully!")
+        print("\n" + "=" * 50)
+        print("📊 ALL COURSES SEEDED SUCCESSFULLY!")
         print("=" * 50)
-        print("📊 Summary:")
-        print(f"   - Python Course: {len(python_course.modules)} modules")
-        print(f"   - Java Course: {len(java_course.modules)} modules")
-        print("✅ All courses seeded successfully!")
+        print(f"   ✅ Python Course: {len(python_course.modules)} modules")
+        print(f"   ✅ Java Course: {len(java_course.modules)} modules")
+        print("=" * 50)
         
     except Exception as e:
         print(f"❌ Error: {e}")

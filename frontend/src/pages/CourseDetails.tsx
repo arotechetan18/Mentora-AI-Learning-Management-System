@@ -7,7 +7,7 @@ import {
   Paper,
   Button,
   Chip,
-  LinearProgress,
+  Grid,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -17,8 +17,19 @@ import {
   ListItemIcon,
   CircularProgress,
   Alert,
+  Divider,
 } from '@mui/material';
-import { ExpandMore, PlayArrow, CheckCircle, Lock } from '@mui/icons-material';
+import {
+  ExpandMore,
+  PlayArrow,
+  Lock,
+  School,
+  Timer,
+  Language,
+  AttachMoney,
+  DoneAll,              // ✅ Double Tick (Completed)
+  RadioButtonUnchecked, // ⚪ Empty Circle (Not Completed)
+} from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { getCourse, getCourseModules, Course, Module, Lesson } from '../api/courses';
 import { enrollInCourse, getMyEnrollments } from '../api/enrollments';
@@ -40,23 +51,26 @@ const CourseDetails: React.FC = () => {
     }
   }, [id, user]);
 
-  const fetchCourseDetails = async (courseId: number) => {
-    try {
-      const [courseData, modulesData, enrollmentsData] = await Promise.all([
-        getCourse(courseId),
-        getCourseModules(courseId),
-        user ? getMyEnrollments() : Promise.resolve([]),
-      ]);
-      setCourse(courseData);
-      setModules(modulesData);
-      setIsEnrolled(enrollmentsData.includes(courseId));
-      setLoading(false);
-    } catch (err) {
-      setError('Failed to load course details');
-      console.error(err);
-      setLoading(false);
-    }
-  };
+const fetchCourseDetails = async (courseId: number) => {
+  try {
+    const [courseData, modulesData, enrollmentsData] = await Promise.all([
+      getCourse(courseId),
+      getCourseModules(courseId),
+      user ? getMyEnrollments() : Promise.resolve([]),
+    ]);
+    setCourse(courseData);
+    
+    
+    console.log("Modules Data:", modulesData);  // Debug log
+    setModules(modulesData);
+    setIsEnrolled(enrollmentsData.includes(courseId));
+    setLoading(false);
+  } catch (err) {
+    setError('Failed to load course details');
+    console.error(err);
+    setLoading(false);
+  }
+};
 
   const handleEnroll = async () => {
     if (!user) {
@@ -81,7 +95,11 @@ const CourseDetails: React.FC = () => {
   };
 
   const handleLessonClick = (lessonId: number) => {
-    navigate(`/lesson/${lessonId}`);
+    if (isEnrolled) {
+      navigate(`/lesson/${lessonId}`);
+    } else {
+      toast.info('Please enroll to access lessons');
+    }
   };
 
   if (loading) {
@@ -104,97 +122,192 @@ const CourseDetails: React.FC = () => {
     <Container maxWidth="lg">
       <Box sx={{ mt: 4, mb: 4 }}>
         {/* Course Header */}
-        <Paper elevation={3} sx={{ p: 4, mb: 3 }}>
-          <Typography variant="h4" gutterBottom>
+        <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
+          <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
             {course.title}
           </Typography>
-          {/* ✅ paragraph property काढली */}
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
             {course.description}
           </Typography>
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 3 }}>
-            <Chip label={`Category: ${course.category}`} variant="outlined" />
-            <Chip label={`${course.difficulty}`} color="primary" />
-            <Chip label={`${course.duration} hours`} variant="outlined" />
-            <Chip label={`₹${course.price}`} variant="outlined" />
+
+          {/* At a glance */}
+          <Grid container spacing={2} sx={{ mb: 3 }}>
+            <Grid size={{ xs: 6, sm: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Timer sx={{ color: '#6C63FF' }} />
+                <Box>
+                  <Typography variant="caption" color="text.secondary">Duration</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{course.duration}h</Typography>
+                </Box>
+              </Box>
+            </Grid>
+            <Grid size={{ xs: 6, sm: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <School sx={{ color: '#6C63FF' }} />
+                <Box>
+                  <Typography variant="caption" color="text.secondary">Level</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600, textTransform: 'capitalize' }}>
+                    {course.difficulty}
+                  </Typography>
+                </Box>
+              </Box>
+            </Grid>
+            <Grid size={{ xs: 6, sm: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Language sx={{ color: '#6C63FF' }} />
+                <Box>
+                  <Typography variant="caption" color="text.secondary">Language</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>English</Typography>
+                </Box>
+              </Box>
+            </Grid>
+            <Grid size={{ xs: 6, sm: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <AttachMoney sx={{ color: '#6C63FF' }} />
+                <Box>
+                  <Typography variant="caption" color="text.secondary">Price</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {course.price === 0 ? 'Free' : `₹${course.price}`}
+                  </Typography>
+                </Box>
+              </Box>
+            </Grid>
+          </Grid>
+
+          {/* What you will learn */}
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+            📝 What you will learn
+          </Typography>
+          <Box sx={{ p: 3, bgcolor: '#f8f9fa', borderRadius: 2, mb: 3 }}>
+            <Typography variant="body2">
+              • Provide insights into basics of programming
+              <br />
+              • Introduce fundamentals of Java programming
+              <br />
+              • Discuss various control structures in Java
+              <br />
+              • Provide insights into basics of object oriented programming
+              <br />
+              • Introduce class and objects
+              <br />
+              • Discuss Encapsulation and need for encapsulation
+            </Typography>
           </Box>
 
-          {isEnrolled ? (
-            <Button variant="contained" color="success" disabled>
-              ✅ Enrolled
-            </Button>
+          {/* Skills you will gain */}
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+            🎯 Skills you will gain
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 3 }}>
+            <Chip label="Java - ALL" sx={{ bgcolor: '#6C63FF', color: 'white' }} />
+            <Chip label="Programming" variant="outlined" />
+            <Chip label="Object Oriented Programming" variant="outlined" />
+          </Box>
+
+          <Divider sx={{ my: 3 }} />
+
+          {/* Table of Contents */}
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+            📖 Table of Contents
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            {modules.reduce((acc, m) => acc + (m.lessons?.length || 0), 0)} lessons • {modules.length} modules
+          </Typography>
+
+          {modules.length === 0 ? (
+            <Alert severity="info">No modules available for this course yet.</Alert>
           ) : (
-            <Button variant="contained" color="primary" onClick={handleEnroll}>
-              Enroll Now
-            </Button>
-          )}
-        </Paper>
-
-        {/* Modules */}
-        <Typography variant="h5" gutterBottom>
-          Course Content
-        </Typography>
-
-        {modules.length === 0 ? (
-          <Alert severity="info">No modules available for this course yet.</Alert>
-        ) : (
-          modules.map((module: Module, index: number) => (
-            <Accordion key={module.id} defaultExpanded={index === 0}>
-              <AccordionSummary expandIcon={<ExpandMore />}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
-                  <Typography variant="h6">
-                    Module {module.order}: {module.title}
+            modules.map((module: Module, index: number) => (
+              <Accordion key={module.id} defaultExpanded={index === 0} sx={{ mb: 1 }}>
+                <AccordionSummary expandIcon={<ExpandMore />}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                      {module.title}
+                    </Typography>
+                    <Chip
+                      label={`${module.lessons?.length || 0} lessons`}
+                      size="small"
+                      variant="outlined"
+                    />
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    {module.description}
                   </Typography>
-                  <Chip
-                    label={`${module.lessons?.length || 0} lessons`}
-                    size="small"
-                    variant="outlined"
-                  />
-                </Box>
-              </AccordionSummary>
-              <AccordionDetails>
-                {/* ✅ paragraph property काढली */}
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  {module.description}
-                </Typography>
-                <List>
-                  {module.lessons?.map((lesson: Lesson) => (
-                    // ✅ button -> component={ListItemButton} वापरा
-                    <ListItem
-                      key={lesson.id}
-                      component="div"
-                      onClick={() => handleLessonClick(lesson.id)}
-                      sx={{
-                        borderRadius: 1,
-                        mb: 0.5,
-                        cursor: 'pointer',
-                        bgcolor: lesson.is_completed ? 'success.light' : 'transparent',
-                        '&:hover': {
-                          bgcolor: 'action.hover',
-                        },
-                      }}
-                    >
-                      <ListItemIcon>
-                        {lesson.is_completed ? (
-                          <CheckCircle color="success" />
-                        ) : (
-                          <PlayArrow color="primary" />
+                  <List>
+                    {module.lessons?.map((lesson: Lesson) => (
+                      <ListItem
+                        key={lesson.id}
+                        component="div"
+                        onClick={() => handleLessonClick(lesson.id)}
+                        sx={{
+                          borderRadius: 1,
+                          mb: 0.5,
+                          cursor: isEnrolled ? 'pointer' : 'default',
+                          bgcolor: lesson.is_completed ? 'success.light' : 'transparent',
+                          '&:hover': {
+                            bgcolor: isEnrolled ? 'action.hover' : 'transparent',
+                          },
+                        }}
+                      >
+                        {/* ✅ WhatsApp Style Double Tick */}
+                        <ListItemIcon sx={{ minWidth: 36 }}>
+                          {lesson.is_completed ? (
+                            <DoneAll sx={{ color: '#6C63FF' }} />   // ✅ Blue Double Tick
+                          ) : (
+                            <RadioButtonUnchecked sx={{ color: '#9CA3AF' }} /> // ⚪ Gray Circle
+                          )}
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={lesson.title}
+                          secondary={`${lesson.duration} min`}
+                        />
+                        {lesson.is_completed && (
+                          <Chip label="Completed" size="small" color="success" />
                         )}
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={lesson.title}
-                        secondary={`${lesson.duration} min`}
-                      />
-                      {lesson.is_completed && (
-                        <Chip label="Completed" size="small" color="success" />
-                      )}
-                    </ListItem>
-                  ))}
-                </List>
-              </AccordionDetails>
-            </Accordion>
-          ))
-        )}
+                        {!isEnrolled && (
+                          <Lock fontSize="small" color="action" />
+                        )}
+                      </ListItem>
+                    ))}
+                  </List>
+                </AccordionDetails>
+              </Accordion>
+            ))
+          )}
+
+          {/* Action Button */}
+          <Box sx={{ mt: 4, textAlign: 'center' }}>
+            {isEnrolled ? (
+              <Button
+                variant="contained"
+                size="large"
+                startIcon={<PlayArrow />}
+                onClick={() => {
+                  const firstLesson = modules[0]?.lessons?.[0];
+                  if (firstLesson) {
+                    navigate(`/lesson/${firstLesson.id}`);
+                  } else {
+                    toast.info('No lessons available yet');
+                  }
+                }}
+                sx={{ px: 6, py: 1.5 }}
+              >
+                Continue Learning
+              </Button>
+            ) : (
+              <Button
+                variant="contained"
+                size="large"
+                onClick={handleEnroll}
+                sx={{ px: 6, py: 1.5 }}
+              >
+                Enroll Now
+              </Button>
+            )}
+          </Box>
+        </Paper>
       </Box>
     </Container>
   );
