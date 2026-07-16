@@ -4,9 +4,9 @@ from typing import Optional
 from enum import Enum
 
 class DifficultyLevel(str, Enum):
-    BEGINNER = "beginner"
-    INTERMEDIATE = "intermediate"
-    ADVANCED = "advanced"
+    BEGINNER = "BEGINNER"
+    INTERMEDIATE = "INTERMEDIATE"
+    ADVANCED = "ADVANCED"
 
 class CourseBase(BaseModel):
     title: str

@@ -205,7 +205,7 @@ const fetchData = useCallback(async () => {
                   <CourseCard
                     course={course}
                     isEnrolled={true}
-                    progress={course.progress || 0}  // ✅ Real Progress
+                    progress={course.progress || 0}  //  Real Progress
                     onEnroll={() => {}}
                     onClick={() => handleCourseClick(course.id)}
                   />

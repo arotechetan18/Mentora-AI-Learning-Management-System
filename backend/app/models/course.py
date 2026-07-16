@@ -5,9 +5,10 @@ from ..core.database import Base
 import enum
 
 class DifficultyLevel(str, enum.Enum):
-    BEGINNER = "beginner"
-    INTERMEDIATE = "intermediate"
-    ADVANCED = "advanced"
+    BEGINNER = "BEGINNER"
+    INTERMEDIATE = "INTERMEDIATE"
+    ADVANCED = "ADVANCED"
+    BEGINNER_TO_ADVANCED = "beginner to advanced" 
 
 class Course(Base):
     __tablename__ = "courses"
