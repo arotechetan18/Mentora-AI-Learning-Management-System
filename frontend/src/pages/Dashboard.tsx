@@ -11,6 +11,13 @@ import {
   CircularProgress,
   Button,
   Stack,
+  Avatar,
+  Menu,
+  MenuItem,
+  IconButton,
+  Divider,
+  ListItemIcon,
+  Tooltip,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -20,6 +27,10 @@ import {
   ArrowForward,
   Login as LoginIcon,
   Rocket as RocketIcon,
+  Person,
+  Settings,
+  Logout,
+  Dashboard as DashboardIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { getCourses, Course } from '../api/courses';
@@ -30,7 +41,7 @@ import AuthModal from '../components/auth/AuthModal';
 import { toast } from 'react-toastify';
 
 const Dashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [courses, setCourses] = useState<Course[]>([]);
   const [enrollments, setEnrollments] = useState<number[]>([]);
@@ -38,27 +49,50 @@ const Dashboard: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  
+  // Profile Menu State
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    logout();
+    handleMenuClose();
+    navigate('/login');
+  };
+
+  const handleProfile = () => {
+    handleMenuClose();
+    navigate('/profile');
+  };
 
   // ✅ Real progress fetch
-const fetchData = useCallback(async () => {
-  try {
-    console.log("🔄 Fetching courses...");
-    const coursesData = await getCourses();
-    console.log("✅ Courses Data from API:", coursesData);  // ✅ हे Check करा
-    console.log("📊 Number of courses:", coursesData.length);
-    setCourses(coursesData);
-    
-    if (user) {
-      const enrollmentsData = await getMyEnrollments();
-      console.log("✅ Enrollments:", enrollmentsData);
-      setEnrollments(enrollmentsData);
+  const fetchData = useCallback(async () => {
+    try {
+      console.log("🔄 Fetching courses...");
+      const coursesData = await getCourses();
+      console.log("✅ Courses Data from API:", coursesData);
+      console.log("📊 Number of courses:", coursesData.length);
+      setCourses(coursesData);
+      
+      if (user) {
+        const enrollmentsData = await getMyEnrollments();
+        console.log("✅ Enrollments:", enrollmentsData);
+        setEnrollments(enrollmentsData);
+      }
+    } catch (error) {
+      console.error("❌ Error fetching data:", error);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("❌ Error fetching data:", error);
-  } finally {
-    setLoading(false);
-  }
-}, [user]);
+  }, [user]);
 
   useEffect(() => {
     fetchData();
@@ -120,40 +154,132 @@ const fetchData = useCallback(async () => {
   return (
     <Box sx={{ bgcolor: '#F8F9FE', minHeight: '100vh', pb: 6 }}>
       <Container maxWidth="lg">
-        {/* Welcome Section */}
-        <Box sx={{ pt: 4, pb: 3 }}>
-          {user ? (
-            <>
-              <Typography variant="h4" sx={{ fontWeight: 800, color: '#1A1A2E', mb: 0.5 }}>
-                Welcome back, {user?.full_name?.split(' ')[0] || 'Student'} 👋
-              </Typography>
-              <Typography variant="body1" color="text.secondary">
-                Continue your learning journey with Mentora
-              </Typography>
-            </>
-          ) : (
-            <Box sx={{ p: 4, background: 'linear-gradient(135deg, #6C63FF 0%, #4A42D9 100%)', borderRadius: 3, color: 'white' }}>
-              <Grid container spacing={3}>
-                <Grid size={{ xs: 12, md: 8 }}>
-                  <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-                    🚀 Start Your Learning Journey
-                  </Typography>
-                  <Typography variant="body1" sx={{ opacity: 0.9, mb: 2 }}>
-                    Join Mentora and unlock thousands of courses.
-                  </Typography>
-                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                    <Button variant="contained" size="large" startIcon={<RocketIcon />} onClick={() => navigate('/register')} sx={{ bgcolor: 'white', color: '#6C63FF' }}>
-                      Get Started Free
-                    </Button>
-                    <Button variant="outlined" size="large" startIcon={<LoginIcon />} onClick={() => navigate('/login')} sx={{ borderColor: 'white', color: 'white' }}>
-                      Login
-                    </Button>
-                  </Stack>
+        {/* Welcome Section with Profile Avatar */}
+        <Box sx={{ pt: 4, pb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box>
+            {user ? (
+              <>
+                <Typography variant="h4" sx={{ fontWeight: 800, color: '#1A1A2E', mb: 0.5 }}>
+                  Welcome back, {user?.full_name?.split(' ')[0] || 'Student'} 👋
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  Continue your learning journey with Mentora
+                </Typography>
+              </>
+            ) : (
+              <Box sx={{ p: 4, background: 'linear-gradient(135deg, #6C63FF 0%, #4A42D9 100%)', borderRadius: 3, color: 'white', width: '100%' }}>
+                <Grid container spacing={3}>
+                  <Grid size={{ xs: 12, md: 8 }}>
+                    <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+                      🚀 Start Your Learning Journey
+                    </Typography>
+                    <Typography variant="body1" sx={{ opacity: 0.9, mb: 2 }}>
+                      Join Mentora and unlock thousands of courses.
+                    </Typography>
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                      <Button variant="contained" size="large" startIcon={<RocketIcon />} onClick={() => navigate('/register')} sx={{ bgcolor: 'white', color: '#6C63FF' }}>
+                        Get Started Free
+                      </Button>
+                      <Button variant="outlined" size="large" startIcon={<LoginIcon />} onClick={() => navigate('/login')} sx={{ borderColor: 'white', color: 'white' }}>
+                        Login
+                      </Button>
+                    </Stack>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 4 }} sx={{ display: { xs: 'none', md: 'block' } }}>
+                    <Box sx={{ textAlign: 'center', fontSize: 64 }}>🎓</Box>
+                  </Grid>
                 </Grid>
-                <Grid size={{ xs: 12, md: 4 }} sx={{ display: { xs: 'none', md: 'block' } }}>
-                  <Box sx={{ textAlign: 'center', fontSize: 64 }}>🎓</Box>
-                </Grid>
-              </Grid>
+              </Box>
+            )}
+          </Box>
+
+          {/* ✅ PROFILE AVATAR - TOP RIGHT CORNER */}
+          {user && (
+            <Box>
+              <Tooltip title="Profile">
+                <IconButton
+                  onClick={handleMenuClick}
+                  size="medium"
+                  sx={{ 
+                    bgcolor: '#6C63FF', 
+                    color: 'white',
+                    '&:hover': { bgcolor: '#5A52D9' },
+                    width: 48,
+                    height: 48,
+                  }}
+                >
+                  <Avatar sx={{ bgcolor: 'transparent', width: 40, height: 40 }}>
+                    {user?.full_name?.charAt(0) || 'U'}
+                  </Avatar>
+                </IconButton>
+              </Tooltip>
+
+              {/* Profile Dropdown Menu */}
+                           {/* Profile Dropdown Menu */}
+              <Menu
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleMenuClose}
+                onClick={handleMenuClose}
+                transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                sx={{ 
+                  mt: 1,
+                  '& .MuiPaper-root': {
+                    minWidth: 220,
+                    borderRadius: 2,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                  }
+                }}
+              >
+                <Box sx={{ px: 2, py: 1.5 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                    {user?.full_name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: 12 }}>
+                    {user?.email}
+                  </Typography>
+                  <Typography variant="caption" sx={{ 
+                    bgcolor: '#6C63FF', 
+                    color: 'white', 
+                    px: 1, 
+                    py: 0.3, 
+                    borderRadius: 1,
+                    display: 'inline-block',
+                    mt: 0.5,
+                    fontSize: 10,
+                    textTransform: 'uppercase'
+                  }}>
+                    {user?.role || 'STUDENT'}
+                  </Typography>
+                </Box>
+                <Divider />
+                <MenuItem onClick={handleProfile}>
+                  <ListItemIcon>
+                    <Person fontSize="small" sx={{ color: '#6C63FF' }} />
+                  </ListItemIcon>
+                  My Profile
+                </MenuItem>
+                <MenuItem onClick={() => { handleMenuClose(); navigate('/dashboard'); }}>
+                  <ListItemIcon>
+                    <DashboardIcon fontSize="small" sx={{ color: '#6C63FF' }} />
+                  </ListItemIcon>
+                  Dashboard
+                </MenuItem>
+                <MenuItem onClick={handleProfile}>
+                  <ListItemIcon>
+                    <Settings fontSize="small" sx={{ color: '#6C63FF' }} />
+                  </ListItemIcon>
+                  Settings
+                </MenuItem>
+                <Divider />
+                <MenuItem onClick={handleLogout} sx={{ color: '#FF4444' }}>
+                  <ListItemIcon>
+                    <Logout fontSize="small" sx={{ color: '#FF4444' }} />
+                  </ListItemIcon>
+                  Logout
+                </MenuItem>
+              </Menu>
             </Box>
           )}
         </Box>
@@ -205,7 +331,7 @@ const fetchData = useCallback(async () => {
                   <CourseCard
                     course={course}
                     isEnrolled={true}
-                    progress={course.progress || 0}  //  Real Progress
+                    progress={course.progress || 0}
                     onEnroll={() => {}}
                     onClick={() => handleCourseClick(course.id)}
                   />
@@ -246,7 +372,7 @@ const fetchData = useCallback(async () => {
                 <CourseCard
                   course={course}
                   isEnrolled={enrollments.includes(course.id)}
-                  progress={course.progress || 0}  // ✅ Real Progress
+                  progress={course.progress || 0}
                   onEnroll={() => handleEnroll(course.id)}
                   onClick={() => handleCourseClick(course.id)}
                 />

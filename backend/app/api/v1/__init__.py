@@ -8,6 +8,7 @@ from .progress import router as progress_router
 from .lessons import router as lessons_router
 from .modules import router as modules_router
 
+
 __all__ = [
     "auth_router", "courses_router", "enrollments_router",
     "notes_router", "quizzes_router", "ai_doubt_router",

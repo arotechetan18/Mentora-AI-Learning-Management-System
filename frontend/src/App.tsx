@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard';
 import CourseDetails from './pages/CourseDetails';
 import LessonPage from './pages/Lesson';
 import ProtectedRoute from './components/common/ProtectedRoute';
+import Profile from './pages/Profile';
 
 const AppRoutes = () => {
   const { user, loading } = useAuth();
@@ -29,6 +30,7 @@ const AppRoutes = () => {
         <Route path="/course/:id" element={<CourseDetails />} />
         <Route path="/lesson/:id" element={<ProtectedRoute><LessonPage /></ProtectedRoute>} />
         <Route path="/my-courses" element={<ProtectedRoute><MyCourses /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       </Routes>
       <ToastContainer position="top-right" autoClose={3000} />
     </>

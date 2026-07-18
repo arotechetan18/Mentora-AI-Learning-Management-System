@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import Base, engine
+from app.api.v1.profile import router as profile_router
 
 from app.api.v1.auth import router as auth_router
 from app.api.v1.courses import router as courses_router
@@ -50,6 +51,7 @@ app.include_router(ai_doubt_router, prefix=settings.API_V1_STR)
 app.include_router(progress_router, prefix=settings.API_V1_STR)
 app.include_router(lessons_router, prefix=settings.API_V1_STR)
 app.include_router(modules_router, prefix=settings.API_V1_STR)
+app.include_router(profile_router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 def root():

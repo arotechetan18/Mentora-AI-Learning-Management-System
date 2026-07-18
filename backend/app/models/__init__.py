@@ -9,6 +9,7 @@ from .module import Module
 from .lesson import Lesson
 from .quiz_question import QuizQuestion
 from .lesson_progress import LessonProgress
+from .profile import Profile
 
 __all__ = [
     "User", "UserRole", "Course", "DifficultyLevel",

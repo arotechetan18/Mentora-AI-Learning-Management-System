@@ -1,3 +1,4 @@
+# app/api/v1/auth.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from ...core.database import get_db
@@ -5,7 +6,9 @@ from ...core.security import get_password_hash, verify_password, create_access_t
 from ...models.user import User, UserRole
 from pydantic import BaseModel, EmailStr
 from typing import Optional
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from jose import JWTError, jwt
+from ...core.config import settings
 
 # Router with tags
 router = APIRouter(tags=["Authentication"])
@@ -35,6 +38,42 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserResponse
+
+class TokenData(BaseModel):
+    user_id: Optional[int] = None
+
+# ==================== AUTH DEPENDENCIES ====================
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
+
+async def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise credentials_exception
+        token_data = TokenData(user_id=int(user_id))
+    except JWTError:
+        raise credentials_exception
+    
+    user = db.query(User).filter(User.id == token_data.user_id).first()
+    if user is None:
+        raise credentials_exception
+    return user
+
+async def get_current_active_user(
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user.is_active:
+        raise HTTPException(status_code=400, detail="Inactive user")
+    return current_user
 
 # ==================== TEST ROUTE ====================
 @router.get("/test")
@@ -79,3 +118,10 @@ def login(
         "token_type": "bearer",
         "user": user
     }
+
+# ==================== GET CURRENT USER ====================
+@router.get("/me", response_model=UserResponse)
+def get_current_user_info(
+    current_user: User = Depends(get_current_user)
+):
+    return current_user
