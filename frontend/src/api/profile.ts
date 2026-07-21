@@ -3,6 +3,16 @@ import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1';
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('access_token');
+  return {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    }
+  };
+};
+
 export interface Profile {
   id: number;
   user_id: number;
@@ -36,17 +46,11 @@ export interface UserWithProfile {
 }
 
 export const getMyProfile = async (): Promise<UserWithProfile> => {
-  const token = localStorage.getItem('token');
-  const response = await axios.get(`${API_URL}/profile/me`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await axios.get(`${API_URL}/profile/me`, getAuthHeaders());
   return response.data;
 };
 
 export const updateMyProfile = async (data: Partial<Profile>): Promise<Profile> => {
-  const token = localStorage.getItem('token');
-  const response = await axios.put(`${API_URL}/profile/me`, data, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await axios.put(`${API_URL}/profile/me`, data, getAuthHeaders());
   return response.data;
 };

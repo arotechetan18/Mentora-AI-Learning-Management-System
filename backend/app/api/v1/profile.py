@@ -20,7 +20,6 @@ def get_my_profile(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # Create profile if not exists
     if not user.profile:
         profile = Profile(user_id=user.id)
         db.add(profile)

@@ -2,7 +2,7 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from app.core.database import Base  # Changed from ..core.database to app.core.database
+from app.core.database import Base
 
 class Profile(Base):
     __tablename__ = "profiles"
@@ -38,5 +38,4 @@ class Profile(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-    # Relationship with User
     user = relationship("User", back_populates="profile")

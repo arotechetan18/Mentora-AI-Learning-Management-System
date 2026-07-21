@@ -31,6 +31,7 @@ const AppRoutes = () => {
         <Route path="/lesson/:id" element={<ProtectedRoute><LessonPage /></ProtectedRoute>} />
         <Route path="/my-courses" element={<ProtectedRoute><MyCourses /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        
       </Routes>
       <ToastContainer position="top-right" autoClose={3000} />
     </>

@@ -1,0 +1,14 @@
+[33md317f49[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m feat: Add complete profile system with dashboard integration
+[33m3164f7f[m Fix: CORS configuration and database seeding
+[33m2c88dda[m complete and update LMS with courses, lessons and quiz
+[33mc089608[m feat: add course modules, lessons, quizzes, and progress tracking
+[33m905b420[m fix: remove API key from test file
+[33me4e9c73[m feat: add complete course modules with lessons, quizzes, and progress tracking
+[33mb368eeb[m feat: add React frontend with auth pages and AI doubt solver integration
+[33m077f1a5[m feat(quiz): add quiz module with create, attempt, and auto-grading and setup of frontend with react
+[33m0c33e83[m  Notes Management System with full CRUD oprations
+[33mb8ae255[m Add enrollment system with enroll, list, check, and unenroll APIs
+[33mcbf59d3[m Add course management system with CRUD operations and role-based access
+[33mb3c193e[m  Add authentication APIs: register, login, and test route
+[33ma972eef[m AI LMS Backend Setup with FastAPI
+[33m627027a[m Initial commit:setup of backend with the fastapi

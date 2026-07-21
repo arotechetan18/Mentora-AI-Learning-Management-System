@@ -13,6 +13,7 @@ from app.api.v1.ai_doubt import router as ai_doubt_router
 from app.api.v1.progress import router as progress_router
 from app.api.v1.lessons import router as lessons_router
 from app.api.v1.modules import router as modules_router
+from app.api.v1.profile import router as profile_router
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -42,6 +43,7 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(profile_router, prefix="/api/v1")
 app.include_router(auth_router, prefix=settings.API_V1_STR)
 app.include_router(courses_router, prefix=settings.API_V1_STR)
 app.include_router(enrollments_router, prefix=settings.API_V1_STR)
