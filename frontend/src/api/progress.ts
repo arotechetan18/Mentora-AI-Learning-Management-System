@@ -1,3 +1,4 @@
+// src/api/progress.ts
 import api from './index';
 
 export interface CourseProgress {
@@ -9,6 +10,16 @@ export interface CourseProgress {
 }
 
 export const getCourseProgress = async (courseId: number): Promise<CourseProgress> => {
-  const response = await api.get(`/progress/courses/${courseId}`);
+  const response = await api.get(`/progress/courses/${courseId}/progress`);
   return response.data;
+};
+
+
+export const getCompletedLessons = async (courseId: number): Promise<number[]> => {
+  try {
+    const response = await api.get(`/progress/courses/${courseId}/completed-lessons`);
+    return response.data;
+  } catch {
+    return [];
+  }
 };

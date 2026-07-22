@@ -9,6 +9,7 @@ from ...models.enrollment import Enrollment
 from ...models.progress import Progress
 from ...models.lesson import Lesson
 from ...models.lesson_progress import LessonProgress
+from ...models.module import Module  # ✅ ADD THIS
 from ...schemas.progress import ProgressResponse, DashboardResponse
 from datetime import datetime
 
@@ -170,3 +171,87 @@ def update_course_progress(
         "progress": enrollment.progress,
         "is_completed": enrollment.completed
     }
+
+# ==================== RECALCULATE PROGRESS (NEW) ====================
+@router.post("/courses/{course_id}/recalculate")
+def recalculate_progress(
+    course_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Recalculate course progress based on completed lessons"""
+    
+    enrollment = db.query(Enrollment).filter(
+        Enrollment.user_id == current_user.id,
+        Enrollment.course_id == course_id
+    ).first()
+    
+    if not enrollment:
+        raise HTTPException(status_code=404, detail="Not enrolled")
+    
+    # ✅ Count total lessons
+    total_lessons = db.query(Lesson).join(Lesson.module).filter(
+        Lesson.module.has(course_id=course_id)
+    ).count()
+    
+    if total_lessons == 0:
+        return {"message": "No lessons in this course", "progress": 0}
+    
+    # ✅ Count completed lessons
+    completed_lessons = db.query(LessonProgress).join(
+        LessonProgress.lesson
+    ).join(
+        Lesson.module
+    ).filter(
+        LessonProgress.user_id == current_user.id,
+        LessonProgress.is_completed == True,
+        Lesson.module.has(course_id=course_id)
+    ).count()
+    
+    # ✅ Update progress
+    progress = round((completed_lessons / total_lessons) * 100, 2)
+    enrollment.progress = progress
+    
+    if progress >= 100:
+        enrollment.completed = True
+        enrollment.completed_at = datetime.utcnow()
+    
+    db.commit()
+    
+    return {
+        "course_id": course_id,
+        "total_lessons": total_lessons,
+        "completed_lessons": completed_lessons,
+        "progress": progress,
+        "is_completed": enrollment.completed
+    }
+# ==================== GET COMPLETED LESSONS ====================
+@router.get("/courses/{course_id}/completed-lessons")
+def get_completed_lessons(
+    course_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get list of completed lesson IDs for a course"""
+    
+    # Check enrollment
+    enrollment = db.query(Enrollment).filter(
+        Enrollment.user_id == current_user.id,
+        Enrollment.course_id == course_id
+    ).first()
+    
+    if not enrollment:
+        raise HTTPException(status_code=404, detail="Not enrolled in this course")
+    
+    # ✅ Get completed lesson IDs
+    completed_lessons = db.query(LessonProgress).join(
+        LessonProgress.lesson
+    ).join(
+        Lesson.module
+    ).filter(
+        LessonProgress.user_id == current_user.id,
+        LessonProgress.is_completed == True,
+        Lesson.module.has(course_id=course_id)
+    ).all()
+    
+    return [lp.lesson_id for lp in completed_lessons]

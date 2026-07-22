@@ -18,6 +18,7 @@ import {
   CircularProgress,
   Alert,
   Divider,
+  LinearProgress,
 } from '@mui/material';
 import {
   ExpandMore,
@@ -27,12 +28,13 @@ import {
   Timer,
   Language,
   AttachMoney,
-  DoneAll,              // ✅ Double Tick (Completed)
-  RadioButtonUnchecked, // ⚪ Empty Circle (Not Completed)
+  DoneAll,
+  RadioButtonUnchecked,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { getCourse, getCourseModules, Course, Module, Lesson } from '../api/courses';
 import { enrollInCourse, getMyEnrollments } from '../api/enrollments';
+import { getCourseProgress, getCompletedLessons } from '../api/progress'; // ✅ ADD
 import { toast } from 'react-toastify';
 
 const CourseDetails: React.FC = () => {
@@ -44,6 +46,7 @@ const CourseDetails: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [error, setError] = useState('');
+  const [courseProgress, setCourseProgress] = useState(0);
 
   useEffect(() => {
     if (id) {
@@ -51,26 +54,54 @@ const CourseDetails: React.FC = () => {
     }
   }, [id, user]);
 
-const fetchCourseDetails = async (courseId: number) => {
-  try {
-    const [courseData, modulesData, enrollmentsData] = await Promise.all([
-      getCourse(courseId),
-      getCourseModules(courseId),
-      user ? getMyEnrollments() : Promise.resolve([]),
-    ]);
-    setCourse(courseData);
-    
-    
-    console.log("Modules Data:", modulesData);  // Debug log
-    setModules(modulesData);
-    setIsEnrolled(enrollmentsData.includes(courseId));
-    setLoading(false);
-  } catch (err) {
-    setError('Failed to load course details');
-    console.error(err);
-    setLoading(false);
-  }
-};
+  const fetchCourseDetails = async (courseId: number) => {
+    try {
+      setLoading(true);
+      
+      const [courseData, modulesData, enrollmentsData] = await Promise.all([
+        getCourse(courseId),
+        getCourseModules(courseId),
+        user ? getMyEnrollments() : Promise.resolve([]),
+      ]);
+      
+      setCourse(courseData);
+      setIsEnrolled(enrollmentsData.includes(courseId));
+      
+      if (user && enrollmentsData.includes(courseId)) {
+        try {
+          // Get course progress
+          const progress = await getCourseProgress(courseId);
+          console.log("📊 Course Progress:", progress);
+          setCourseProgress(progress.progress || 0);
+          
+          // Get completed lesson IDs
+          const completedIds = await getCompletedLessons(courseId);
+          console.log("✅ Completed Lessons:", completedIds);
+          
+          // Mark only completed lessons
+          const updatedModules = modulesData.map((module: Module) => ({
+            ...module,
+            lessons: module.lessons?.map((lesson: Lesson) => ({
+              ...lesson,
+              is_completed: completedIds.includes(lesson.id)  // Only true if in list
+            }))
+          }));
+          setModules(updatedModules);
+        } catch (err) {
+          console.error("❌ Error fetching progress:", err);
+          setModules(modulesData);
+        }
+      } else {
+        setModules(modulesData);
+      }
+      
+      setLoading(false);
+    } catch (err) {
+      setError('Failed to load course details');
+      console.error(err);
+      setLoading(false);
+    }
+  };
 
   const handleEnroll = async () => {
     if (!user) {
@@ -121,11 +152,54 @@ const fetchCourseDetails = async (courseId: number) => {
   return (
     <Container maxWidth="lg">
       <Box sx={{ mt: 4, mb: 4 }}>
-        {/* Course Header */}
         <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
-          <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
-            {course.title}
-          </Typography>
+          {/* Header with Course Progress */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+            <Typography variant="h4" sx={{ fontWeight: 700 }}>
+              {course.title}
+            </Typography>
+            {isEnrolled && (
+              <Chip
+                label={`${Math.round(courseProgress)}% Complete`}
+                sx={{ 
+                  bgcolor: courseProgress >= 100 ? '#2ECC71' : 
+                           courseProgress >= 50 ? '#F39C12' : '#6C63FF',
+                  color: 'white',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  px: 1,
+                }}
+              />
+            )}
+          </Box>
+
+          {/* Course Progress Bar */}
+          {isEnrolled && (
+            <Box sx={{ mb: 4 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Course Progress
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                  {Math.round(courseProgress)}%
+                </Typography>
+              </Box>
+              <LinearProgress
+                variant="determinate"
+                value={courseProgress}
+                sx={{
+                  height: 8,
+                  borderRadius: 4,
+                  bgcolor: 'rgba(108, 99, 255, 0.1)',
+                  '& .MuiLinearProgress-bar': {
+                    background: 'linear-gradient(90deg, #6C63FF 0%, #4A42D9 100%)',
+                    borderRadius: 4,
+                  },
+                }}
+              />
+            </Box>
+          )}
+
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
             {course.description}
           </Typography>
@@ -174,36 +248,6 @@ const fetchCourseDetails = async (courseId: number) => {
             </Grid>
           </Grid>
 
-          {/* What you will learn */}
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-            📝 What you will learn
-          </Typography>
-          <Box sx={{ p: 3, bgcolor: '#f8f9fa', borderRadius: 2, mb: 3 }}>
-            <Typography variant="body2">
-              • Provide insights into basics of programming
-              <br />
-              • Introduce fundamentals of Java programming
-              <br />
-              • Discuss various control structures in Java
-              <br />
-              • Provide insights into basics of object oriented programming
-              <br />
-              • Introduce class and objects
-              <br />
-              • Discuss Encapsulation and need for encapsulation
-            </Typography>
-          </Box>
-
-          {/* Skills you will gain */}
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-            🎯 Skills you will gain
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 3 }}>
-            <Chip label="Java - ALL" sx={{ bgcolor: '#6C63FF', color: 'white' }} />
-            <Chip label="Programming" variant="outlined" />
-            <Chip label="Object Oriented Programming" variant="outlined" />
-          </Box>
-
           <Divider sx={{ my: 3 }} />
 
           {/* Table of Contents */}
@@ -245,18 +289,17 @@ const fetchCourseDetails = async (courseId: number) => {
                           borderRadius: 1,
                           mb: 0.5,
                           cursor: isEnrolled ? 'pointer' : 'default',
-                          bgcolor: lesson.is_completed ? 'success.light' : 'transparent',
+                          bgcolor: lesson.is_completed ? 'rgba(46, 204, 113, 0.1)' : 'transparent',
                           '&:hover': {
                             bgcolor: isEnrolled ? 'action.hover' : 'transparent',
                           },
                         }}
                       >
-                        {/* ✅ WhatsApp Style Double Tick */}
                         <ListItemIcon sx={{ minWidth: 36 }}>
                           {lesson.is_completed ? (
-                            <DoneAll sx={{ color: '#6C63FF' }} />   // ✅ Blue Double Tick
+                            <DoneAll sx={{ color: '#2ECC71' }} />
                           ) : (
-                            <RadioButtonUnchecked sx={{ color: '#9CA3AF' }} /> // ⚪ Gray Circle
+                            <RadioButtonUnchecked sx={{ color: '#9CA3AF' }} />
                           )}
                         </ListItemIcon>
                         <ListItemText
