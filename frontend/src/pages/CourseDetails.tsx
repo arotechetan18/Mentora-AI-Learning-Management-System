@@ -76,7 +76,7 @@ const CourseDetails: React.FC = () => {
           
           // Get completed lesson IDs
           const completedIds = await getCompletedLessons(courseId);
-          console.log("✅ Completed Lessons:", completedIds);
+          console.log(" Completed Lessons:", completedIds);
           
           // Mark only completed lessons
           const updatedModules = modulesData.map((module: Module) => ({

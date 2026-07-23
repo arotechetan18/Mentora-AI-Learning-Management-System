@@ -5295,12 +5295,1548 @@ jobs:
                 db.commit()
 
         print(f"✅Java Course: {len(java_course.modules)} modules created!")
+                # ============================================
+        # SPRING BOOT COURSE - 10 MODULES
+        # ============================================
+        print("\n📚 Creating Spring Boot Course with 10 Modules...")
+
+        springboot_course = Course(
+            title="Spring Boot - Zero to Hero",
+            description="Complete Spring Boot course with 10 modules - from basics to microservices",
+            category="Programming",
+            difficulty="INTERMEDIATE",
+            duration=80,
+            instructor_id=instructor.id,
+            price=9999,
+            is_published=True
+        )
+        db.add(springboot_course)
+        db.commit()
+        db.refresh(springboot_course)
+        print(f"✅ Spring Boot Course created (ID: {springboot_course.id})")
+
+        # ==================== 10 SPRING BOOT MODULES ====================
+        springboot_modules = [
+            # ===== MODULE 1: Spring Boot Introduction =====
+            {
+                "title": "Module 1: Spring Boot Introduction",
+                "description": "Spring Boot basics and setup",
+                "order": 1,
+                "lessons": [
+                    {
+                        "title": "What is Spring Boot?",
+                        "description": "Introduction to Spring Boot",
+                        "concept": """# What is Spring Boot?
+Spring Boot is a framework that simplifies Spring application development.
+
+## Key Features:
+1. **Auto-configuration** - Automatic configuration
+2. **Embedded Servers** - Tomcat, Jetty, Undertow
+3. **Starter Dependencies** - Pre-configured dependencies
+4. **Production-ready** - Actuator, health checks
+
+## Spring Boot vs Spring:
+- Spring Boot is built on top of Spring
+- Less configuration
+- Faster development
+- Standalone applications""",
+                        "example": """# Spring Boot Application
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+
+# REST Controller
+@RestController
+public class HelloController {
+    @GetMapping("/hello")
+    public String hello() {
+        return "Hello, Spring Boot!";
+    }
+}""",
+                        "interview_questions": """1. What is Spring Boot?
+2. What is the advantage of Spring Boot?
+3. What is @SpringBootApplication?
+4. What are starter dependencies?""",
+                        "duration": 25,
+                        "order": 1,
+                        "quiz": [
+                            {
+                                "question": "Which annotation is used for Spring Boot main class?",
+                                "options": ["@SpringBootApplication", "@SpringApplication", "@BootApplication", "@SpringApp"],
+                                "correct_answer": 0,
+                                "explanation": "@SpringBootApplication is the main annotation."
+                            }
+                        ]
+                    }
+                ]
+            },
+            # ===== MODULE 2: REST APIs =====
+            {
+                "title": "Module 2: Spring Boot REST APIs",
+                "description": "Building REST APIs with Spring Boot",
+                "order": 2,
+                "lessons": [
+                    {
+                        "title": "REST API Development",
+                        "description": "Creating REST endpoints",
+                        "concept": """# REST APIs with Spring Boot
+REST (Representational State Transfer) is an architectural style.
+
+## Common Annotations:
+- `@RestController` - REST controller
+- `@GetMapping` - GET endpoint
+- `@PostMapping` - POST endpoint
+- `@PutMapping` - PUT endpoint
+- `@DeleteMapping` - DELETE endpoint
+- `@PathVariable` - Path variable
+- `@RequestParam` - Query parameter
+- `@RequestBody` - Request body
+
+## HTTP Methods:
+| Method | Purpose |
+|--------|---------|
+| GET | Retrieve data |
+| POST | Create data |
+| PUT | Update data |
+| DELETE | Delete data |""",
+                        "example": """# User Controller
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+    
+    @GetMapping
+    public List<User> getUsers() {
+        return userService.findAll();
+    }
+    
+    @GetMapping("/{id}")
+    public User getUser(@PathVariable Long id) {
+        return userService.findById(id);
+    }
+    
+    @PostMapping
+    public User createUser(@RequestBody User user) {
+        return userService.save(user);
+    }
+    
+    @PutMapping("/{id}")
+    public User updateUser(@PathVariable Long id, @RequestBody User user) {
+        user.setId(id);
+        return userService.save(user);
+    }
+    
+    @DeleteMapping("/{id}")
+    public void deleteUser(@PathVariable Long id) {
+        userService.deleteById(id);
+    }
+}""",
+                        "interview_questions": """1. What is REST API?
+2. What are the common HTTP methods?
+3. What is the difference between @PathVariable and @RequestParam?
+4. What is @RequestBody used for?""",
+                        "duration": 30,
+                        "order": 1,
+                        "quiz": [
+                            {
+                                "question": "Which annotation is used for GET endpoint?",
+                                "options": ["@GetMapping", "@PostMapping", "@PutMapping", "@DeleteMapping"],
+                                "correct_answer": 0,
+                                "explanation": "@GetMapping is used for GET endpoints."
+                            }
+                        ]
+                    }
+                ]
+            },
+            # ===== MODULE 3: Spring Data JPA =====
+            {
+                "title": "Module 3: Spring Data JPA",
+                "description": "Database access with Spring Data JPA",
+                "order": 3,
+                "lessons": [
+                    {
+                        "title": "Spring Data JPA",
+                        "description": "JPA with Spring Boot",
+                        "concept": """# Spring Data JPA
+Spring Data JPA simplifies database access.
+
+## JPA Annotations:
+- `@Entity` - Database entity
+- `@Table` - Table name
+- `@Id` - Primary key
+- `@GeneratedValue` - Auto generation
+- `@Column` - Column mapping
+- `@OneToMany` - One-to-many relationship
+- `@ManyToOne` - Many-to-one relationship
+
+## Repository:
+```java
+@Repository
+public interface UserRepository extends JpaRepository<User, Long> {
+    // CRUD methods automatically provided
+    List<User> findByName(String name);
+    Optional<User> findByEmail(String email);
+}
+```""",
+                        "example": """# Entity
+@Entity
+@Table(name = "users")
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(nullable = false)
+    private String name;
+    
+    @Column(unique = true, nullable = false)
+    private String email;
+    
+    private int age;
+    
+    // getters and setters
+}
+
+# Repository
+@Repository
+public interface UserRepository extends JpaRepository<User, Long> {
+    List<User> findByName(String name);
+    Optional<User> findByEmail(String email);
+    List<User> findByAgeGreaterThan(int age);
+}
+
+# Service
+@Service
+public class UserService {
+    @Autowired
+    private UserRepository userRepository;
+    
+    public User save(User user) {
+        return userRepository.save(user);
+    }
+    
+    public List<User> findAll() {
+        return userRepository.findAll();
+    }
+    
+    public User findById(Long id) {
+        return userRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+}""",
+                        "interview_questions": """1. What is JPA?
+2. What is the difference between Hibernate and JPA?
+3. What is the purpose of @Entity annotation?
+4. What are the common JPA relationships?""",
+                        "duration": 30,
+                        "order": 1,
+                        "quiz": [
+                            {
+                                "question": "Which annotation marks a class as JPA entity?",
+                                "options": ["@Entity", "@Table", "@Column", "@Id"],
+                                "correct_answer": 0,
+                                "explanation": "@Entity marks a class as a JPA entity."
+                            }
+                        ]
+                    }
+                ]
+            },
+            # ===== MODULE 4: Spring Security =====
+            {
+                "title": "Module 4: Spring Security",
+                "description": "Authentication and Authorization",
+                "order": 4,
+                "lessons": [
+                    {
+                        "title": "Spring Security",
+                        "description": "Security with Spring Boot",
+                        "concept": """# Spring Security
+Spring Security provides authentication and authorization.
+
+## Key Concepts:
+1. **Authentication** - Who are you?
+2. **Authorization** - What can you do?
+3. **Principal** - Currently authenticated user
+4. **GrantedAuthority** - Permission/role
+
+## Security Configuration:
+```java
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeHttpRequests()
+                .requestMatchers("/api/public/**").permitAll()
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .anyRequest().authenticated()
+            .and()
+            .httpBasic();
+        return http.build();
+    }
+}
+```""",
+                        "example": """# Security Configuration
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+    
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf().disable()
+            .authorizeHttpRequests()
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .anyRequest().authenticated()
+            .and()
+            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and()
+            .httpBasic();
+        return http.build();
+    }
+    
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}""",
+                        "interview_questions": """1. What is Spring Security?
+2. What is the difference between authentication and authorization?
+3. What is JWT and why is it used?
+4. What is the purpose of BCryptPasswordEncoder?""",
+                        "duration": 35,
+                        "order": 1,
+                        "quiz": [
+                            {
+                                "question": "Which annotation enables method-level security?",
+                                "options": ["@EnableGlobalMethodSecurity", "@EnableWebSecurity", "@SecurityEnabled", "@MethodSecurity"],
+                                "correct_answer": 0,
+                                "explanation": "@EnableGlobalMethodSecurity enables method-level security."
+                            }
+                        ]
+                    }
+                ]
+            },
+            # ===== MODULE 5: Spring Cloud Microservices =====
+            {
+                "title": "Module 5: Spring Cloud Microservices",
+                "description": "Microservices with Spring Cloud",
+                "order": 5,
+                "lessons": [
+                    {
+                        "title": "Spring Cloud",
+                        "description": "Microservices with Spring Cloud",
+                        "concept": """# Spring Cloud
+Spring Cloud provides tools for building microservices.
+
+## Key Components:
+1. **Service Registry** - Eureka
+2. **API Gateway** - Spring Cloud Gateway
+3. **Config Server** - External configuration
+4. **Circuit Breaker** - Resilience4j
+5. **Distributed Tracing** - Sleuth
+
+## Service Discovery:
+```yaml
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+```""",
+                        "example": """# Service Registry (Eureka)
+@SpringBootApplication
+@EnableEurekaServer
+public class ServiceRegistryApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(ServiceRegistryApplication.class, args);
+    }
+}
+
+# API Gateway
+@SpringBootApplication
+@EnableDiscoveryClient
+public class ApiGatewayApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(ApiGatewayApplication.class, args);
+    }
+}
+
+# Feign Client
+@FeignClient(name = "user-service", fallback = UserServiceFallback.class)
+public interface UserServiceClient {
+    @GetMapping("/api/users/{id}")
+    User getUser(@PathVariable Long id);
+}""",
+                        "interview_questions": """1. What is Spring Cloud?
+2. What is service discovery?
+3. What is an API Gateway?
+4. What is the circuit breaker pattern?""",
+                        "duration": 35,
+                        "order": 1,
+                        "quiz": [
+                            {
+                                "question": "Which annotation enables Eureka service registry?",
+                                "options": ["@EnableEurekaServer", "@EnableDiscoveryClient", "@EnableEurekaClient", "@EnableServiceRegistry"],
+                                "correct_answer": 0,
+                                "explanation": "@EnableEurekaServer enables Eureka service registry."
+                            }
+                        ]
+                    }
+                ]
+            },
+            # ===== MODULE 6: Actuator & Monitoring =====
+            {
+                "title": "Module 6: Actuator & Monitoring",
+                "description": "Spring Boot Actuator",
+                "order": 6,
+                "lessons": [
+                    {
+                        "title": "Spring Boot Actuator",
+                        "description": "Production-ready features",
+                        "concept": """# Spring Boot Actuator
+Actuator provides production-ready features.
+
+## Endpoints:
+- `/actuator/health` - Health status
+- `/actuator/info` - Application info
+- `/actuator/metrics` - Metrics data
+- `/actuator/loggers` - Logging levels
+- `/actuator/env` - Environment properties
+
+## Configuration:
+```yaml
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  health:
+    show-details: always
+```""",
+                        "example": """# Application Properties
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+# Custom Health Indicator
+@Component
+public class CustomHealthIndicator implements HealthIndicator {
+    @Override
+    public Health health() {
+        if (isServiceUp()) {
+            return Health.up()
+                .withDetail("service", "Available")
+                .build();
+        }
+        return Health.down()
+            .withDetail("service", "Unavailable")
+            .build();
+    }
+}""",
+                        "interview_questions": """1. What is Spring Boot Actuator?
+2. What are common actuator endpoints?
+3. What is the purpose of /actuator/health?""",
+                        "duration": 25,
+                        "order": 1,
+                        "quiz": [
+                            {
+                                "question": "Which endpoint shows application health?",
+                                "options": ["/actuator/health", "/actuator/info", "/actuator/metrics", "/actuator/env"],
+                                "correct_answer": 0,
+                                "explanation": "/actuator/health shows application health status."
+                            }
+                        ]
+                    }
+                ]
+            },
+            # ===== MODULE 7: Testing =====
+            {
+                "title": "Module 7: Spring Boot Testing",
+                "description": "Testing Spring Boot applications",
+                "order": 7,
+                "lessons": [
+                    {
+                        "title": "Testing with Spring Boot",
+                        "description": "Unit and integration testing",
+                        "concept": """# Testing with Spring Boot
+Spring Boot provides comprehensive testing support.
+
+## Key Annotations:
+- `@SpringBootTest` - Full application context
+- `@WebMvcTest` - Web layer testing
+- `@DataJpaTest` - JPA testing
+- `@MockBean` - Mock bean
+- `@Test` - JUnit test
+
+## Testing Types:
+1. Unit Tests - Individual components
+2. Integration Tests - Multiple components
+3. End-to-End Tests - Full application""",
+                        "example": """# Unit Test
+@ExtendWith(MockitoExtension.class)
+public class UserServiceTest {
+    @Mock
+    private UserRepository userRepository;
+    
+    @InjectMocks
+    private UserService userService;
+    
+    @Test
+    public void testFindById() {
+        User user = new User(1L, "John", "john@example.com");
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        
+        User found = userService.findById(1L);
+        assertEquals("John", found.getName());
+    }
+}
+
+# Integration Test
+@SpringBootTest
+@AutoConfigureTestDatabase
+public class UserRepositoryTest {
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Test
+    public void testSaveUser() {
+        User user = new User(null, "John", "john@example.com");
+        User saved = userRepository.save(user);
+        assertNotNull(saved.getId());
+    }
+}""",
+                        "interview_questions": """1. What is the difference between @SpringBootTest and @WebMvcTest?
+2. What is the purpose of @MockBean?
+3. What is the difference between unit and integration testing?""",
+                        "duration": 30,
+                        "order": 1,
+                        "quiz": [
+                            {
+                                "question": "Which annotation is used for Spring Boot integration tests?",
+                                "options": ["@SpringBootTest", "@WebMvcTest", "@DataJpaTest", "@Test"],
+                                "correct_answer": 0,
+                                "explanation": "@SpringBootTest is used for full application context integration tests."
+                            }
+                        ]
+                    }
+                ]
+            },
+            # ===== MODULE 8: Docker Deployment =====
+            {
+                "title": "Module 8: Docker Deployment",
+                "description": "Docker with Spring Boot",
+                "order": 8,
+                "lessons": [
+                    {
+                        "title": "Docker for Spring Boot",
+                        "description": "Containerizing Spring Boot apps",
+                        "concept": """# Docker for Spring Boot
+Docker containerizes Spring Boot applications.
+
+## Dockerfile:
+```dockerfile
+FROM openjdk:11-jre-slim
+WORKDIR /app
+COPY target/app.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"] mvn clean package
+docker build -t myapp:latest .
+docker run -p 8080:8080 myapp:latest
+```""",
+                        "example": """# Dockerfile
+FROM openjdk:11-jre-slim
+COPY target/app.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# docker-compose.yml
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - db
+  
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: appdb
+```""",
+                        "interview_questions": """1. How do you dockerize a Spring Boot application?
+2. What is the purpose of .dockerignore?
+3. How do you use environment variables in Docker?""",
+                        "duration": 30,
+                        "order": 1,
+                        "quiz": [
+                            {
+                                "question": "Which instruction in Dockerfile copies files from build stage?",
+                                "options": ["COPY --from", "COPY", "ADD", "RUN"],
+                                "correct_answer": 0,
+                                "explanation": "COPY --from is used to copy from previous build stages."
+                            }
+                        ]
+                    }
+                ]
+            },
+            # ===== MODULE 9: AWS Deployment =====
+            {
+                "title": "Module 9: AWS Deployment",
+                "description": "Deploying to AWS",
+                "order": 9,
+                "lessons": [
+                    {
+                        "title": "AWS Deployment",
+                        "description": "Deploying Spring Boot to AWS",
+                        "concept": """# AWS Deployment Options
+1. EC2 - Full control
+2. Elastic Beanstalk - PaaS
+3. ECS/EKS - Container management
+4. Lambda - Serverless
+
+## Elastic Beanstalk Deployment:
+```bash
+aws elasticbeanstalk create-application-version \
+  --application-name my-app \
+  --version-label v1.0 \
+  --source-bundle S3Bucket=my-bucket,S3Key=app.jar
+```""",
+                        "example": """# buildspec.yml (CodeBuild)
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      java: corretto11
+  build:
+    commands:
+      - mvn clean package
+artifacts:
+  files:
+    - target/app.jar
+
+# application.yml (Beanstalk)
+spring:
+  datasource:
+    url: ${RDS_URL}
+    username: ${RDS_USERNAME}
+    password: ${RDS_PASSWORD}
+```""",
+                        "interview_questions": """1. What are the AWS deployment options for Spring Boot?
+2. What is the difference between EC2 and Elastic Beanstalk?
+3. What is the purpose of buildspec.yml?""",
+                        "duration": 30,
+                        "order": 1,
+                        "quiz": [
+                            {
+                                "question": "Which AWS service is PaaS for Spring Boot?",
+                                "options": ["Elastic Beanstalk", "EC2", "ECS", "Lambda"],
+                                "correct_answer": 0,
+                                "explanation": "Elastic Beanstalk is a PaaS service that simplifies deployment."
+                            }
+                        ]
+                    }
+                ]
+            },
+            # ===== MODULE 10: Best Practices =====
+            {
+                "title": "Module 10: Spring Boot Best Practices",
+                "description": "Best practices and patterns",
+                "order": 10,
+                "lessons": [
+                    {
+                        "title": "Spring Boot Best Practices",
+                        "description": "Common patterns and practices",
+                        "concept": """# Spring Boot Best Practices
+## 1. Package Structure: 
+## 2. Use DTOs:
+- Don't expose entities
+- Use DTOs for API responses
+
+## 3. Exception Handling:
+- Global exception handler
+- Custom exceptions
+- @ControllerAdvice
+
+## 4. Validation:
+- @Valid annotations
+- Custom validators""",
+                        "example": """# Global Exception Handler
+@ControllerAdvice
+public class GlobalExceptionHandler {
+    @ExceptionHandler(ResourceNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNotFound(ResourceNotFoundException ex) {
+        return new ErrorResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage());
+    }
+}
+
+# DTO
+@Data
+public class UserDTO {
+    @NotNull(message = "Name is required")
+    private String name;
+    
+    @Email(message = "Invalid email")
+    @NotNull(message = "Email is required")
+    private String email;
+}
+
+# Service
+@Service
+@Slf4j
+public class UserServiceImpl implements UserService {
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Override
+    public UserDTO createUser(UserDTO userDTO) {
+        log.info("Creating user: {}", userDTO.getEmail());
+        User user = convertToEntity(userDTO);
+        User saved = userRepository.save(user);
+        return convertToDTO(saved);
+    }
+}""",
+                        "interview_questions": """1. What are the best practices for Spring Boot?
+2. What is the purpose of DTOs?
+3. How do you handle exceptions in Spring Boot?
+4. How do you validate request data in Spring Boot?""",
+                        "duration": 30,
+                        "order": 1,
+                        "quiz": [
+                            {
+                                "question": "Which annotation is used for global exception handling?",
+                                "options": ["@ControllerAdvice", "@ExceptionHandler", "@RestControllerAdvice", "All of the above"],
+                                "correct_answer": 3,
+                                "explanation": "All are used for exception handling."
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+
+        # Add Spring Boot modules to database
+        for mod_data in springboot_modules:
+            module = Module(
+                course_id=springboot_course.id,
+                title=mod_data["title"],
+                description=mod_data["description"],
+                order=mod_data["order"]
+            )
+            db.add(module)
+            db.commit()
+            db.refresh(module)
+
+            for lesson_data in mod_data["lessons"]:
+                lesson = Lesson(
+                    module_id=module.id,
+                    title=lesson_data["title"],
+                    description=lesson_data["description"],
+                    concept=lesson_data["concept"],
+                    example=lesson_data["example"],
+                    interview_questions=lesson_data["interview_questions"],
+                    duration=lesson_data["duration"],
+                    order=lesson_data["order"]
+                )
+                db.add(lesson)
+                db.commit()
+                db.refresh(lesson)
+
+                for quiz_data in lesson_data.get("quiz", []):
+                    quiz = QuizQuestion(
+                        lesson_id=lesson.id,
+                        question=quiz_data["question"],
+                        options=quiz_data["options"],
+                        correct_answer=quiz_data["correct_answer"],
+                        explanation=quiz_data["explanation"]
+                    )
+                    db.add(quiz)
+                db.commit()
+
+        print(f"✅ Spring Boot Course: {len(springboot_course.modules)} modules created!")
+       
+
+        # ============================================
+        # FRONTEND COURSE - 5 MODULES (HTML + CSS + JS)
+        # ============================================
+        
+
+        frontend_course = Course(
+            title="Frontend Development - Zero to Hero",
+            description="Complete Frontend course - HTML, CSS, JavaScript",
+            category="Web Development",
+            difficulty="BEGINNER",
+            duration=50,
+            instructor_id=instructor.id,
+            price=0,
+            is_published=True
+        )
+        db.add(frontend_course)
+        db.commit()
+        db.refresh(frontend_course)
+        print(f"✅ Frontend Course created (ID: {frontend_course.id})")
+
+        # ==================== 5 FRONTEND MODULES ====================
+        frontend_modules = [
+            # ===== MODULE 1: HTML Basics =====
+            {
+                "title": "Module 1: HTML Basics",
+                "description": "HTML fundamentals",
+                "order": 1,
+                "lessons": [
+                    {
+                        "title": "What is HTML?",
+                        "description": "Introduction to HTML",
+                        "concept": """# What is HTML?
+HTML (HyperText Markup Language) is the standard markup language for creating web pages.
+
+## Key Concepts:
+1. Elements - Building blocks (h1, p, div)
+2. Tags - Define elements (<h1>...</h1>)
+3. Attributes - Additional info (class, id, src)
+4. Structure - Head, body, content
+
+## Basic HTML Structure:
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Page</title>
+</head>
+<body>
+    <h1>Hello World!</h1>
+    <p>This is a paragraph.</p>
+</body>
+</html>
+```""",
+                        "example": """# HTML Example
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My First Page</title>
+</head>
+<body>
+    <h1>Main Heading</h1>
+    <p>This is a paragraph of text.</p>
+    <a href="https://example.com">Click here</a>
+    <img src="image.jpg" alt="Description">
+    <ul>
+        <li>Item 1</li>
+        <li>Item 2</li>
+    </ul>
+</body>
+</html>""",
+                        "interview_questions": """1. What is HTML?
+2. What are HTML elements and tags?
+3. What is the structure of an HTML document?""",
+                        "duration": 20,
+                        "order": 1,
+                        "quiz": [
+                            {
+                                "question": "What does HTML stand for?",
+                                "options": ["HyperText Markup Language", "HyperText Machine Language", "HyperText Markdown Language", "HighText Markup Language"],
+                                "correct_answer": 0,
+                                "explanation": "HTML stands for HyperText Markup Language."
+                            }
+                        ]
+                    },
+                    {
+                        "title": "HTML Elements",
+                        "description": "Common HTML elements",
+                        "concept": """# Common HTML Elements
+
+## Text Elements:
+<h1> to <h6> - Headings
+<p> - Paragraph
+<span> - Inline text
+<div> - Block container
+
+## List Elements:
+<ul> - Unordered list
+<ol> - Ordered list
+<li> - List item
+
+## Link & Image:
+<a href="url">Link</a>
+<img src="image.jpg" alt="description">""",
+                        "example": """# HTML Elements Example
+<h1>Heading 1</h1>
+<h2>Heading 2</h2>
+<p>This is a paragraph.</p>
+<ul>
+    <li>Apple</li>
+    <li>Banana</li>
+</ul>
+<a href="https://google.com">Google</a>
+<img src="photo.jpg" alt="Photo">""",
+                        "interview_questions": """1. What are the different types of HTML elements?
+2. What is the difference between div and span?
+3. What is the difference between ul and ol?""",
+                        "duration": 20,
+                        "order": 2,
+                        "quiz": [
+                            {
+                                "question": "Which tag is used for an unordered list?",
+                                "options": ["<ul>", "<ol>", "<li>", "<list>"],
+                                "correct_answer": 0,
+                                "explanation": "<ul> is used for unordered lists."
+                            }
+                        ]
+                    },
+                    {
+                        "title": "HTML Forms",
+                        "description": "Creating forms in HTML",
+                        "concept": """# HTML Forms
+Forms are used to collect user input.
+
+## Form Elements:
+<form> - Form container
+<input> - Input field
+<textarea> - Multi-line text
+<select> - Dropdown
+<button> - Button
+
+## Input Types:
+text, email, password, number, checkbox, radio, submit, file""",
+                        "example": """# HTML Form Example
+<form action="/submit" method="POST">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" required>
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" required>
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password">
+    <button type="submit">Submit</button>
+</form>""",
+                        "interview_questions": """1. What are HTML forms?
+2. What are the different input types?
+3. What is the difference between GET and POST methods?""",
+                        "duration": 20,
+                        "order": 3,
+                        "quiz": [
+                            {
+                                "question": "Which input type is used for email?",
+                                "options": ["type='email'", "type='text'", "type='mail'", "type='input'"],
+                                "correct_answer": 0,
+                                "explanation": "type='email' is used for email input."
+                            }
+                        ]
+                    }
+                ]
+            },
+            # ===== MODULE 2: CSS Basics =====
+            {
+                "title": "Module 2: CSS Basics",
+                "description": "CSS fundamentals",
+                "order": 2,
+                "lessons": [
+                    {
+                        "title": "What is CSS?",
+                        "description": "Introduction to CSS",
+                        "concept": """# What is CSS?
+CSS (Cascading Style Sheets) is used to style HTML elements.
+
+## Key Concepts:
+1. Selectors - Target HTML elements
+2. Properties - Define styles
+3. Values - Set property values
+4. Cascading - Rule priority
+
+## CSS Syntax:
+selector { property: value; }
+
+## Ways to Apply CSS:
+1. Inline - style attribute
+2. Internal - <style> tag
+3. External - .css file""",
+                        "example": """# CSS Example
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+}
+h1 { color: #333; text-align: center; }
+.container {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+}""",
+                        "interview_questions": """1. What is CSS?
+2. What are the different ways to apply CSS?
+3. What is the box model?""",
+                        "duration": 20,
+                        "order": 1,
+                        "quiz": [
+                            {
+                                "question": "What does CSS stand for?",
+                                "options": ["Cascading Style Sheets", "Creative Style Sheets", "Computer Style Sheets", "Cascading Sheet Styles"],
+                                "correct_answer": 0,
+                                "explanation": "CSS stands for Cascading Style Sheets."
+                            }
+                        ]
+                    },
+                    {
+                        "title": "CSS Selectors & Properties",
+                        "description": "CSS selectors and common properties",
+                        "concept": """# CSS Selectors
+Element selector: p { color: blue; }
+Class selector: .class { color: red; }
+ID selector: #id { color: green; }
+
+# Common Properties
+Color: color: #333; background-color: #f5f5f5;
+Text: font-size: 16px; text-align: center;
+Box Model: width, height, padding, margin, border
+Display: display: block; display: flex; display: grid;""",
+                        "example": """# CSS Properties Example
+.card {
+    width: 300px;
+    margin: 50px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    text-align: center;
+}
+.card h2 { color: #1a1a2e; }
+.card .btn {
+    padding: 10px 20px;
+    background: #6C63FF;
+    color: white;
+    border-radius: 5px;
+}
+.card .btn:hover { background: #4A42D9; }""",
+                        "interview_questions": """1. What are the different CSS selectors?
+2. What is the box model in CSS?
+3. What is the difference between display:block and display:inline?""",
+                        "duration": 20,
+                        "order": 2,
+                        "quiz": [
+                            {
+                                "question": "Which selector targets elements by class?",
+                                "options": [".class", "#id", "element", "*"],
+                                "correct_answer": 0,
+                                "explanation": ".class is used to target elements by class."
+                            }
+                        ]
+                    },
+                    {
+                        "title": "CSS Flexbox",
+                        "description": "CSS layout with Flexbox",
+                        "concept": """# CSS Flexbox
+Flexbox is a one-dimensional layout model.
+
+## Flex Container Properties:
+display: flex;
+flex-direction: row/column;
+justify-content: center/flex-start/flex-end/space-between;
+align-items: center/flex-start/flex-end;
+flex-wrap: wrap;""",
+                        "example": """# Flexbox Example
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    height: 100vh;
+}
+.box {
+    width: 100px;
+    height: 100px;
+    background: #6C63FF;
+    border-radius: 8px;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}""",
+                        "interview_questions": """1. What is Flexbox in CSS?
+2. What are the properties of flex containers?
+3. How do you center a div using Flexbox?""",
+                        "duration": 20,
+                        "order": 3,
+                        "quiz": [
+                            {
+                                "question": "Which property centers items horizontally in flexbox?",
+                                "options": ["justify-content", "align-items", "align-content", "flex-direction"],
+                                "correct_answer": 0,
+                                "explanation": "justify-content centers items horizontally."
+                            }
+                        ]
+                    }
+                ]
+            },
+            # ===== MODULE 3: JavaScript Basics =====
+            {
+                "title": "Module 3: JavaScript Basics",
+                "description": "JavaScript fundamentals",
+                "order": 3,
+                "lessons": [
+                    {
+                        "title": "What is JavaScript?",
+                        "description": "Introduction to JavaScript",
+                        "concept": """# What is JavaScript?
+JavaScript is a programming language for web interactivity.
+
+## Key Concepts:
+1. Variables - Store data (let, const, var)
+2. Data Types - string, number, boolean, object, array
+3. Functions - Reusable code blocks
+4. Events - User interactions
+5. DOM - Document Object Model""",
+                        "example": """# JavaScript Examples
+// Variables
+let name = "Alice";
+const age = 25;
+let isStudent = true;
+
+// Functions
+function add(a, b) { return a + b; }
+const multiply = (a, b) => a * b;
+
+// Console
+console.log("Hello World");
+
+// DOM
+document.querySelector("#header").innerHTML = "Hello";
+document.querySelector("#btn").addEventListener("click", function() {
+    alert("Button clicked!");
+});""",
+                        "interview_questions": """1. What is JavaScript?
+2. What is the difference between let, const, and var?
+3. What is the DOM?""",
+                        "duration": 25,
+                        "order": 1,
+                        "quiz": [
+                            {
+                                "question": "Which keyword is used for variables that cannot be reassigned?",
+                                "options": ["let", "var", "const", "static"],
+                                "correct_answer": 2,
+                                "explanation": "const is used for variables that cannot be reassigned."
+                            }
+                        ]
+                    },
+                    {
+                        "title": "JavaScript Functions & Events",
+                        "description": "Functions and events in JavaScript",
+                        "concept": """# JavaScript Functions
+A function is a reusable block of code.
+
+## Function Types:
+Function Declaration: function greet() { }
+Function Expression: const greet = function() { }
+Arrow Function: const greet = () => { }
+
+## Common Events:
+onclick - Click event
+onmouseover - Mouse hover
+onchange - Input change
+onsubmit - Form submit""",
+                        "example": """# JavaScript Functions & Events
+// Function
+function greet(name) { return "Hello, " + name + "!"; }
+const square = (x) => x * x;
+
+// Events
+document.getElementById("btn").addEventListener("click", function() {
+    alert("Clicked!");
+});
+document.getElementById("box").addEventListener("mouseover", function() {
+    this.style.backgroundColor = "red";
+});
+document.getElementById("form").addEventListener("submit", function(e) {
+    e.preventDefault();
+    alert("Submitted!");
+});""",
+                        "interview_questions": """1. What are functions in JavaScript?
+2. What is the difference between function declaration and expression?
+3. What are events in JavaScript?""",
+                        "duration": 25,
+                        "order": 2,
+                        "quiz": [
+                            {
+                                "question": "Which method attaches an event listener?",
+                                "options": ["addEventListener", "onclick", "attachEvent", "listen"],
+                                "correct_answer": 0,
+                                "explanation": "addEventListener is used to attach event listeners."
+                            }
+                        ]
+                    },
+                    {
+                        "title": "DOM Manipulation",
+                        "description": "Manipulating the DOM",
+                        "concept": """# DOM Manipulation
+The DOM (Document Object Model) represents the HTML document.
+
+## Selecting Elements:
+document.getElementById('id')
+document.querySelector('.class')
+document.querySelectorAll('.class')
+
+## Changing Content:
+element.innerHTML = 'New content'
+element.textContent = 'New text'
+element.style.color = 'red'
+element.classList.add('active')
+
+## Creating/Removing:
+document.createElement('div')
+element.appendChild(child)
+element.remove()""",
+                        "example": """# DOM Manipulation Examples
+// Select
+let header = document.getElementById("header");
+let btn = document.querySelector(".btn");
+
+// Change content
+header.innerHTML = "<h1>New Heading</h1>";
+header.style.color = "#6C63FF";
+header.classList.add("active");
+
+// Create elements
+let newDiv = document.createElement("div");
+newDiv.textContent = "New Element";
+document.body.appendChild(newDiv);
+
+// Remove
+document.querySelector(".remove-me").remove();""",
+                        "interview_questions": """1. What is DOM manipulation?
+2. How do you select DOM elements?
+3. What is the difference between innerHTML and textContent?
+4. How do you add/remove classes in JavaScript?""",
+                        "duration": 25,
+                        "order": 3,
+                        "quiz": [
+                            {
+                                "question": "Which method selects an element by ID?",
+                                "options": ["document.getElementById()", "document.querySelector()", "document.getElementsByClassName()", "document.getElementsByTagName()"],
+                                "correct_answer": 0,
+                                "explanation": "document.getElementById() selects an element by ID."
+                            }
+                        ]
+                    }
+                ]
+            },
+            # ===== MODULE 4: Advanced JavaScript =====
+            {
+                "title": "Module 4: Advanced JavaScript",
+                "description": "Advanced JavaScript concepts",
+                "order": 4,
+                "lessons": [
+                    {
+                        "title": "Arrays & Objects",
+                        "description": "Working with arrays and objects",
+                        "concept": """# Arrays in JavaScript
+An array is a collection of items.
+
+## Array Methods:
+push() - Add to end
+pop() - Remove from end
+shift() - Remove from start
+unshift() - Add to start
+forEach() - Iterate
+map() - Transform
+filter() - Filter
+reduce() - Reduce to single value
+
+## Objects in JavaScript
+An object is a collection of key-value pairs.""",
+                        "example": """# Arrays & Objects Examples
+// Arrays
+let fruits = ["apple", "banana", "orange"];
+fruits.push("mango");
+fruits.forEach(f => console.log(f));
+let lengths = fruits.map(f => f.length);
+
+// Objects
+let person = {
+    name: "John",
+    age: 30,
+    greet: function() {
+        console.log("Hello, I'm " + this.name);
+    }
+};
+console.log(person.name);
+person.greet();
+person.email = "john@example.com";
+
+// Destructuring
+let { name, age } = person;""",
+                        "interview_questions": """1. What are arrays in JavaScript?
+2. What are common array methods?
+3. What are objects in JavaScript?
+4. What is the spread operator?""",
+                        "duration": 25,
+                        "order": 1,
+                        "quiz": [
+                            {
+                                "question": "Which method adds an element to the end of an array?",
+                                "options": ["push()", "pop()", "shift()", "unshift()"],
+                                "correct_answer": 0,
+                                "explanation": "push() adds an element to the end of an array."
+                            }
+                        ]
+                    },
+                    {
+                        "title": "ES6+ Features",
+                        "description": "Modern JavaScript features",
+                        "concept": """# ES6+ Features
+
+## let and const:
+let x = 10;   // Can be reassigned
+const y = 20; // Cannot be reassigned
+
+## Template Literals:
+`Hello ${name}!`
+
+## Arrow Functions:
+const add = (a, b) => a + b;
+
+## Destructuring:
+const [a, b] = [1, 2];
+const { name, age } = person;
+
+## Spread/Rest:
+const arr = [1, 2, ...more];
+function sum(...args) { }
+
+## Classes:
+class Person { constructor(name) { } }""",
+                        "example": """# ES6+ Examples
+// let and const
+let count = 5;  // Can change
+const PI = 3.14; // Cannot change
+
+// Template literals
+let name = "Alice";
+console.log(`Hello ${name}!`);
+
+// Arrow functions
+const add = (a, b) => a + b;
+
+// Destructuring
+let [first, second] = [1, 2];
+let { name, age } = { name: "John", age: 30 };
+
+// Spread operator
+let arr = [1, 2, 3];
+let newArr = [...arr, 4, 5];
+
+// Classes
+class Person {
+    constructor(name) { this.name = name; }
+    greet() { console.log("Hi " + this.name); }
+}
+let p = new Person("Bob");
+p.greet();""",
+                        "interview_questions": """1. What are the new features in ES6?
+2. What is the difference between let and const?
+3. What are arrow functions?
+4. What is the spread operator?
+5. What are classes in JavaScript?""",
+                        "duration": 25,
+                        "order": 2,
+                        "quiz": [
+                            {
+                                "question": "Which operator is used for template literals?",
+                                "options": ["${}", "{}", "[]", "()"],
+                                "correct_answer": 0,
+                                "explanation": "${} is used for template literals."
+                            }
+                        ]
+                    }
+                ]
+            },
+            # ===== MODULE 5: Mini Projects =====
+            {
+                "title": "Module 5: Mini Projects",
+                "description": "Building projects with HTML, CSS, JavaScript",
+                "order": 5,
+                "lessons": [
+                    {
+                        "title": "To-Do List App",
+                        "description": "Build a to-do list application",
+                        "concept": """# To-Do List App
+A simple to-do list application.
+
+## Features:
+1. Add tasks
+2. Delete tasks
+3. Mark as complete
+4. Filter tasks
+
+## JavaScript Logic:
+let tasks = [];
+function addTask() { }
+function deleteTask(id) { }
+function toggleTask(id) { }""",
+                        "example": """# Complete To-Do List App
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Todo List</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial; background: #f5f5f5; display: flex; justify-content: center; padding: 50px; }
+        .container { width: 400px; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #1a1a2e; margin-bottom: 20px; }
+        .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .input-group input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .input-group button { padding: 10px 20px; background: #6C63FF; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .input-group button:hover { background: #4A42D9; }
+        .task-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
+        .task-item.completed span { text-decoration: line-through; color: #999; }
+        .task-item span { cursor: pointer; flex: 1; }
+        .task-item button { background: red; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
+        .stats { margin-top: 20px; text-align: center; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 My Tasks</h1>
+        <div class="input-group">
+            <input id="taskInput" placeholder="Enter a task...">
+            <button id="addBtn">Add</button>
+        </div>
+        <ul id="taskList"></ul>
+        <div class="stats" id="stats">0 tasks</div>
+    </div>
+    <script>
+        let tasks = []; let idCounter = 0;
+        document.getElementById("addBtn").addEventListener("click", function() {
+            let input = document.getElementById("taskInput");
+            let text = input.value.trim();
+            if (text === "") { alert("Please enter a task!"); return; }
+            tasks.push({ id: ++idCounter, text: text, completed: false });
+            input.value = "";
+            renderTasks();
+        });
+        document.getElementById("taskInput").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") document.getElementById("addBtn").click();
+        });
+        function toggleTask(id) {
+            let task = tasks.find(t => t.id === id);
+            if (task) { task.completed = !task.completed; renderTasks(); }
+        }
+        function deleteTask(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            renderTasks();
+        }
+        function renderTasks() {
+            let list = document.getElementById("taskList");
+            list.innerHTML = "";
+            if (tasks.length === 0) {
+                list.innerHTML = '<p style="text-align:center;color:#999;padding:20px;">No tasks yet!</p>';
+                document.getElementById("stats").textContent = "0 tasks";
+                return;
+            }
+            tasks.forEach(function(task) {
+                let li = document.createElement("li");
+                li.className = "task-item" + (task.completed ? " completed" : "");
+                let span = document.createElement("span");
+                span.textContent = task.text;
+                span.onclick = function() { toggleTask(task.id); };
+                let btn = document.createElement("button");
+                btn.textContent = "Delete";
+                btn.onclick = function() { deleteTask(task.id); };
+                li.appendChild(span); li.appendChild(btn);
+                list.appendChild(li);
+            });
+            let completed = tasks.filter(t => t.completed).length;
+            document.getElementById("stats").textContent = tasks.length + " tasks, " + completed + " completed";
+        }
+        renderTasks();
+    </script>
+</body>
+</html>""",
+                        "interview_questions": """1. How do you build a to-do list app?
+2. How do you add and remove tasks?
+3. How do you mark tasks as complete?""",
+                        "duration": 30,
+                        "order": 1,
+                        "quiz": [
+                            {
+                                "question": "Which method adds an element to an array?",
+                                "options": ["push()", "pop()", "shift()", "unshift()"],
+                                "correct_answer": 0,
+                                "explanation": "push() adds an element to the end of an array."
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+
+        # Add Frontend modules to database
+        for mod_data in frontend_modules:
+            module = Module(
+                course_id=frontend_course.id,
+                title=mod_data["title"],
+                description=mod_data["description"],
+                order=mod_data["order"]
+            )
+            db.add(module)
+            db.commit()
+            db.refresh(module)
+
+            for lesson_data in mod_data["lessons"]:
+                lesson = Lesson(
+                    module_id=module.id,
+                    title=lesson_data["title"],
+                    description=lesson_data["description"],
+                    concept=lesson_data["concept"],
+                    example=lesson_data["example"],
+                    interview_questions=lesson_data["interview_questions"],
+                    duration=lesson_data["duration"],
+                    order=lesson_data["order"]
+                )
+                db.add(lesson)
+                db.commit()
+                db.refresh(lesson)
+
+                for quiz_data in lesson_data.get("quiz", []):
+                    quiz = QuizQuestion(
+                        lesson_id=lesson.id,
+                        question=quiz_data["question"],
+                        options=quiz_data["options"],
+                        correct_answer=quiz_data["correct_answer"],
+                        explanation=quiz_data["explanation"]
+                    )
+                    db.add(quiz)
+                db.commit()
+
+        print(f"✅ Frontend Course: {len(frontend_course.modules)} modules created!")
+
+        print("\n" + "=" * 50)
+        print("✅ FRONTEND COURSE SEEDED SUCCESSFULLY!")
+      
+       
 
         print("\n" + "=" * 50)
         print("✅ALL COURSES SEEDED SUCCESSFULLY!")
         print("=" * 50)
         print(f"   ✅ Python Course: {len(python_course.modules)} modules")
         print(f"   ✅ Java Course: {len(java_course.modules)} modules")
+        print(f"   ✅ Spring Boot Course: {len(springboot_course.modules)} modules") 
+        print(f"   ✅ Frontend Course: {len(frontend_course.modules)} modules")
         print("=" * 50)
 
     except Exception as e:
